@@ -50,6 +50,9 @@ export const BusinessModel = () => {
     };
   }, [activeBlock]);
 
+  // Obtener el componente de icono del bloque activo fuera del JSX
+  const ActiveBlockIcon = activeBlock?.icon || null;
+
   return (
     <section id="modelo-de-negocio" className="aguayo-texture relative bg-cream py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
@@ -164,10 +167,7 @@ export const BusinessModel = () => {
               {/* Contenido del Bloque */}
               <div className="mt-2 flex items-center gap-3">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-red/10 text-red">
-                  {(() => {
-                    const BlockIcon = activeBlock.icon;
-                    return <BlockIcon size={22} />;
-                  })()}
+                  {ActiveBlockIcon && <ActiveBlockIcon size={22} />}
                 </span>
                 <div>
                   <p className="text-[0.65rem] font-bold uppercase tracking-widest text-red">
@@ -218,6 +218,6 @@ export const BusinessModel = () => {
           </div>
         )}
       </AnimatePresence>
-    </>
+    </section>
   );
 };
