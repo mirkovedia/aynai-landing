@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/*
+  Sistema de diseño AynAI
+  -----------------------
+  Estética: editorial andino. Serif de alto contraste para títulos,
+  grotesque limpia para cuerpo. Paleta inspirada en el aguayo boliviano:
+  marrón profundo, rojo, dorado y verde sobre crema.
+  Las fuentes se inyectan vía next/font como variables CSS (ver layout.tsx).
+*/
+
+@theme {
+  /* Paleta cultural andina */
+  --color-cocoa: #1a0a00; /* marrón casi negro — fondos oscuros, texto fuerte */
+  --color-cocoa-800: #2a1408;
+  --color-cocoa-700: #3a2114;
+  --color-red: #d52b1e; /* rojo boliviano — acentos, CTAs */
+  --color-red-600: #b8241a;
+  --color-gold: #f4c430; /* dorado — highlights, detalles */
+  --color-gold-600: #d9a915;
+  --color-green: #007a3d; /* verde — éxito, confirmaciones */
+  --color-green-600: #00622f;
+  --color-cream: #f9f5ee; /* crema — fondo claro */
+  --color-cream-200: #efe7d8;
+  --color-cream-300: #e4d8c2;
+
+  /* Tipografía (variables provistas por next/font) */
+  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+
+  /* Animaciones */
+  --animate-marquee: marquee 28s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-cocoa);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Respeta la preferencia de movimiento reducido (accesibilidad) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Selección de texto con acento dorado */
+::selection {
+  background-color: var(--color-gold);
+  color: var(--color-cocoa);
+}
+
+/* Scrollbar sutil acorde a la marca */
+::-webkit-scrollbar {
+  width: 11px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-cream-200);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-cocoa-700);
+  border-radius: 999px;
+  border: 3px solid var(--color-cream-200);
+}
+
+/* Utilidades de marca ------------------------------------------------ */
+
+/* Franja tricolor boliviana (rojo-amarillo-verde) como separador */
+.tricolor-bar {
+  background: linear-gradient(
+    to right,
+    var(--color-red) 0%,
+    var(--color-red) 33.33%,
+    var(--color-gold) 33.33%,
+    var(--color-gold) 66.66%,
+    var(--color-green) 66.66%,
+    var(--color-green) 100%
+  );
+}
+
+/* Patrón geométrico tipo chakana/aguayo, sutil, como textura de fondo */
+.aguayo-texture {
+  background-image: repeating-linear-gradient(
+      45deg,
+      rgba(244, 196, 48, 0.04) 0px,
+      rgba(244, 196, 48, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(213, 43, 30, 0.04) 0px,
+      rgba(213, 43, 30, 0.04) 2px,
+      transparent 2px,
+      transparent 14px
+    );
+}
+
+/* Resplandor radial cálido para fondos oscuros */
+.cocoa-glow {
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(244, 196, 48, 0.12) 0%, transparent 70%),
+    radial-gradient(50% 40% at 85% 30%, rgba(213, 43, 30, 0.1) 0%, transparent 70%),
+    var(--color-cocoa);
+}
+
+/* Texto con degradado dorado para realces */
+.text-gradient-gold {
+  background: linear-gradient(120deg, var(--color-gold) 0%, #ffe08a 50%, var(--color-gold-600) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Borde con grano/relieve para tarjetas premium */
+.card-andino {
+  background: linear-gradient(180deg, #ffffff 0%, var(--color-cream) 100%);
+  border: 1px solid var(--color-cream-300);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 18px 40px -28px rgba(26, 10, 0, 0.45);
+}
+
+/* Grano de textura para fondos oscuros (overlay de ruido en SVG inline) */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+}

@@ -1,0 +1,30 @@
+{
+  "name": "aynai-landing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Landing page de AynAI — marketplace de habilidades con reputación verificable",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "framer-motion": "^11.11.17",
+    "lucide-react": "^0.468.0",
+    "next": "15.1.9",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "15.1.9",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2"
+  }
+}
