@@ -47,9 +47,27 @@ export const FinalCta = () => {
 
           <Reveal delay={0.16}>
             {sent ? (
-              <div className="mx-auto mt-10 flex max-w-md items-center justify-center gap-3 rounded-full border border-green/40 bg-green/10 px-6 py-4 text-cream">
-                <CheckCircle2 className="text-green" size={22} />
-                <span className="font-medium">¡Listo! Te avisaremos pronto.</span>
+              <div className="mx-auto mt-10 max-w-md rounded-3xl border border-green/30 bg-green/[0.03] p-6 text-cream shadow-xl backdrop-blur-sm">
+                <div className="flex items-center justify-center gap-2.5">
+                  <CheckCircle2 className="text-green" size={24} />
+                  <span className="font-serif text-lg font-bold text-cream">¡Registro Exitoso!</span>
+                </div>
+                <p className="mt-3 text-sm text-cream/70 leading-relaxed">
+                  Hemos guardado tu correo. Para asegurar tu acceso a la beta y recibir tu AynAI Score inicial, por favor responde nuestra encuesta de validación rápida.
+                </p>
+                <div className="mt-5">
+                  <Button
+                    as="a"
+                    href="https://forms.gle/RmAjLuPnACvt5rzj7"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="gold"
+                    className="w-full group"
+                  >
+                    Responder Encuesta en Google Forms
+                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </div>
               </div>
             ) : (
               <form

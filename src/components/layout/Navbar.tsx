@@ -18,6 +18,23 @@ const Logo = ({ light = false }: { light?: boolean }) => (
   </a>
 );
 
+/** Barra de anuncios para captar encuesta */
+const AnnouncementBar = ({ visible }: { visible: boolean }) => (
+  <a
+    href="https://forms.gle/RmAjLuPnACvt5rzj7"
+    target="_blank"
+    rel="noopener noreferrer"
+    className={cn(
+      "block bg-cocoa border-b border-gold/10 hover:border-gold/35 text-cream text-center transition-all duration-300 overflow-hidden",
+      visible ? "max-h-12 py-2 px-4 opacity-100" : "max-h-0 py-0 opacity-0 border-b-0"
+    )}
+  >
+    <p className="font-sans text-[0.7rem] font-medium tracking-wide sm:text-xs text-cream/90 hover:text-cream">
+      📢 <span className="text-gold font-bold">¡Valida tu talento!</span> Responde nuestra encuesta de 3 minutos en Google Forms para asegurar tu acceso beta prioritario. <span className="underline decoration-gold text-gold font-semibold inline-block ml-1">Participar aquí →</span>
+    </p>
+  </a>
+);
+
 /**
  * Barra de navegación sticky. Cambia a fondo crema con sombra al hacer scroll.
  * Incluye menú hamburguesa accesible en móvil.
@@ -42,6 +59,7 @@ export const Navbar = () => {
           : "border-b border-transparent bg-transparent"
       )}
     >
+      <AnnouncementBar visible={!scrolled} />
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
         <Logo />
 
