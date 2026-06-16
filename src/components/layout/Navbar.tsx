@@ -77,9 +77,15 @@ export const Navbar = () => {
           ))}
         </ul>
 
-        <div className="hidden md:block">
-          <Button as="a" href="#contacto" size="sm">
-            Únete ahora
+        <div className="hidden items-center gap-3 md:flex">
+          <a
+            href="/login"
+            className="text-sm font-medium text-cocoa/75 transition-colors hover:text-red"
+          >
+            Iniciar sesión
+          </a>
+          <Button as="a" href="/registro" size="sm">
+            Crear cuenta
           </Button>
         </div>
 
@@ -114,9 +120,18 @@ export const Navbar = () => {
               </a>
             </li>
           ))}
+          <li>
+            <a
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="block rounded-lg px-3 py-3 text-base font-medium text-cocoa/80 transition-colors hover:bg-cocoa/5 hover:text-red"
+            >
+              Iniciar sesión
+            </a>
+          </li>
           <li className="mt-2 px-1">
-            <Button as="a" href="#contacto" size="md" className="w-full" onClick={() => setOpen(false)}>
-              Únete ahora
+            <Button as="a" href="/registro" size="md" className="w-full" onClick={() => setOpen(false)}>
+              Crear cuenta
             </Button>
           </li>
         </ul>
