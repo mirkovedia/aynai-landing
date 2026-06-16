@@ -1,5 +1,3 @@
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
 import { Problem } from "@/components/sections/Problem";
 import { HowItWorks } from "@/components/sections/HowItWorks";
@@ -9,25 +7,18 @@ import { Audience } from "@/components/sections/Audience";
 import { BusinessModel } from "@/components/sections/BusinessModel";
 import { FinalCta } from "@/components/sections/FinalCta";
 
-/**
- * Página principal de la landing de AynAI.
- * Ensambla las secciones en el orden definido por la consigna.
- */
+/** Landing pública de AynAI. Navbar y Footer viven en el layout de (marketing). */
 export default function Home() {
   return (
-    <>
-      <Navbar />
-      <main>
-        <Hero />
-        <Problem />
-        <HowItWorks />
-        <ValueProp />
-        <AynaiScore />
-        <Audience />
-        <BusinessModel />
-        <FinalCta />
-      </main>
-      <Footer />
-    </>
+    <main>
+      <Hero />
+      <Problem />
+      <HowItWorks />
+      <ValueProp />
+      <AynaiScore />
+      <Audience />
+      <BusinessModel />
+      <FinalCta />
+    </main>
   );
 }
