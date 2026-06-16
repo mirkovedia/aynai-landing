@@ -5,19 +5,38 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChakanaPattern } from "@/components/shared/ChakanaPattern";
 import { Reveal } from "@/components/shared/Reveal";
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * CTA final — fondo cocoa con franja tricolor superior y un formulario de
- * email (validación visual). Es el ancla #contacto de la navegación.
+ * email que persiste el registro en la tabla `waitlist` de Supabase.
+ * Es el ancla #contacto de la navegación.
  */
 export const FinalCta = () => {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Por ahora el envío es solo visual: confirma localmente sin backend.
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  // Inserta el email en Supabase. Trata el duplicado (23505) como éxito amable.
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email.includes("@")) return;
+    setError(null);
+    setLoading(true);
+
+    const supabase = createClient();
+    const { error: insertError } = await supabase
+      .from("waitlist")
+      .insert({ email });
+
+    setLoading(false);
+
+    if (insertError && insertError.code !== "23505") {
+      setError("No pudimos guardar tu correo. Inténtalo de nuevo.");
+      return;
+    }
+
     setSent(true);
   };
 
@@ -86,13 +105,17 @@ export const FinalCta = () => {
                   placeholder="tu@correo.com"
                   className="w-full flex-1 rounded-full border border-cream/20 bg-cream/5 px-5 py-3.5 text-cream placeholder:text-cream/40 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/30"
                 />
-                <Button type="submit" size="lg" className="group shrink-0">
-                  Únete ahora
+                <Button type="submit" size="lg" disabled={loading} className="group shrink-0">
+                  {loading ? "Guardando..." : "Únete ahora"}
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                 </Button>
               </form>
             )}
           </Reveal>
+
+          {error && (
+            <p className="mx-auto mt-4 max-w-md text-sm text-gold">{error}</p>
+          )}
 
           <Reveal delay={0.24}>
             <p className="mt-5 text-xs text-cream/40">
