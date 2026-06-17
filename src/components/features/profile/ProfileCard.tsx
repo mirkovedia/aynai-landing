@@ -4,7 +4,7 @@ import type { Profile, UserSkill, Availability } from "@/types/database";
 /** Subconjunto público del perfil (nunca incluye email). */
 export type PublicProfile = Omit<Profile, "email">;
 
-interface ProfileCardProps {
+export interface ProfileCardProps {
   profile: PublicProfile;
   skills: UserSkill[];
 }
@@ -27,6 +27,11 @@ export const ProfileCard = ({ profile, skills }: ProfileCardProps) => {
   const seeks = skills.filter((s) => s.kind === "seek");
   const name = profile.full_name?.trim() || profile.username || "Usuario";
 
+  // Garantiza que availability sea un valor conocido; si no, usa "unavailable"
+  const availability: Availability = ["available", "busy", "unavailable"].includes(profile.availability)
+    ? profile.availability
+    : "unavailable";
+
   return (
     <div className="rounded-3xl border border-cream-300 bg-white p-6 shadow-sm sm:p-8">
       <div className="flex items-start gap-5">
@@ -48,9 +53,9 @@ export const ProfileCard = ({ profile, skills }: ProfileCardProps) => {
               </span>
             )}
             <span
-              className={`rounded-full px-3 py-1 text-xs font-medium ${availabilityColor[profile.availability]}`}
+              className={`rounded-full px-3 py-1 text-xs font-medium ${availabilityColor[availability]}`}
             >
-              {availabilityLabel[profile.availability]}
+              {availabilityLabel[availability]}
             </span>
             {profile.modality && (
               <span className="text-xs text-cocoa/50">{profile.modality}</span>
@@ -72,20 +77,20 @@ export const ProfileCard = ({ profile, skills }: ProfileCardProps) => {
         <SkillList title="Busca" items={seeks} accent="text-red" />
       </div>
 
-      {(profile.links.web || profile.links.linkedin || profile.links.github) && (
+      {(profile.links?.web || profile.links?.linkedin || profile.links?.github) && (
         <div className="mt-6 flex gap-4 text-cocoa/60">
-          {profile.links.web && (
-            <a href={profile.links.web} target="_blank" rel="noopener noreferrer" aria-label="Sitio web">
+          {profile.links?.web && (
+            <a href={profile.links?.web} target="_blank" rel="noopener noreferrer" aria-label="Sitio web">
               <Globe size={18} />
             </a>
           )}
-          {profile.links.linkedin && (
-            <a href={profile.links.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          {profile.links?.linkedin && (
+            <a href={profile.links?.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
               <Linkedin size={18} />
             </a>
           )}
-          {profile.links.github && (
-            <a href={profile.links.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          {profile.links?.github && (
+            <a href={profile.links?.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
               <Github size={18} />
             </a>
           )}
