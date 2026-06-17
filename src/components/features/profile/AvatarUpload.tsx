@@ -4,7 +4,7 @@ import { useState, useRef, type ChangeEvent } from "react";
 import { Camera } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-interface AvatarUploadProps {
+export interface AvatarUploadProps {
   userId: string;
   value: string | null;
   onChange: (url: string) => void;
@@ -12,6 +12,12 @@ interface AvatarUploadProps {
 
 const MAX_BYTES = 2 * 1024 * 1024; // 2MB
 const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
+
+const EXT_BY_TYPE: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
 /** Sube el avatar a Storage (avatars/{userId}/avatar.ext) y devuelve la URL pública. */
 export const AvatarUpload = ({ userId, value, onChange }: AvatarUploadProps) => {
@@ -35,28 +41,32 @@ export const AvatarUpload = ({ userId, value, onChange }: AvatarUploadProps) => 
     }
 
     setUploading(true);
-    const supabase = createClient();
-    const ext = file.name.split(".").pop() ?? "jpg";
-    const path = `${userId}/avatar.${ext}`;
+    try {
+      const supabase = createClient();
+      const ext = EXT_BY_TYPE[file.type] ?? "jpg";
+      const path = `${userId}/avatar.${ext}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { upsert: true, contentType: file.type });
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type });
 
-    if (uploadError) {
+      if (uploadError) {
+        setError("No pudimos subir la imagen. Inténtalo de nuevo.");
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(path);
+      // Cache-busting solo para el preview local; al padre va la URL canónica.
+      setPreview(`${publicUrl}?t=${Date.now()}`);
+      onChange(publicUrl);
+    } finally {
       setUploading(false);
-      setError("No pudimos subir la imagen. Inténtalo de nuevo.");
-      return;
     }
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("avatars").getPublicUrl(path);
-    // Cache-busting para que el navegador no muestre la imagen vieja.
-    const busted = `${publicUrl}?t=${Date.now()}`;
-    setPreview(busted);
-    onChange(busted);
-    setUploading(false);
+    // Permite re-seleccionar el mismo archivo y que onChange vuelva a dispararse.
+    e.target.value = "";
   };
 
   return (
