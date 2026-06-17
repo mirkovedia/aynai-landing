@@ -28,7 +28,7 @@ export const updateProfile = async (input: ProfileInput): Promise<ActionResult> 
   } = await supabase.auth.getUser();
   if (authError || !user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
 
-  const { username, full_name, bio, location, availability, modality, links, skills } =
+  const { username, avatar_url, full_name, bio, location, availability, modality, links, skills } =
     parsed.data;
 
   // Quitar links vacíos antes de guardar.
@@ -40,6 +40,7 @@ export const updateProfile = async (input: ProfileInput): Promise<ActionResult> 
     .from("profiles")
     .update({
       username,
+      avatar_url: avatar_url || null,
       full_name,
       bio: bio || null,
       location: location || null,

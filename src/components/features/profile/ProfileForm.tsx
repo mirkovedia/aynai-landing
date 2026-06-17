@@ -49,6 +49,7 @@ export const ProfileForm = ({ profile, skills }: ProfileFormProps) => {
 
     const input: ProfileInput = {
       username,
+      avatar_url: avatarUrl ?? "",
       full_name: fullName,
       bio,
       location,
@@ -58,15 +59,19 @@ export const ProfileForm = ({ profile, skills }: ProfileFormProps) => {
       skills: skillList,
     };
 
-    const result = await updateProfile(input);
-    setSaving(false);
-
-    if (result.error) {
-      setError(result.error);
-      return;
+    try {
+      const result = await updateProfile(input);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      router.push("/perfil");
+      router.refresh();
+    } catch {
+      setError("Ocurrió un error inesperado. Intenta de nuevo.");
+    } finally {
+      setSaving(false);
     }
-    router.push("/perfil");
-    router.refresh();
   };
 
   return (

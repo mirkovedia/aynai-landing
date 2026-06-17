@@ -13,6 +13,7 @@ export const profileSchema = z.object({
   username: z
     .string()
     .regex(/^[a-z0-9_]{3,20}$/, "3-20 caracteres: a-z, 0-9, _"),
+  avatar_url: optionalUrl,
   full_name: z.string().min(2).max(80),
   bio: z.string().max(500).optional().or(z.literal("")),
   location: z.string().max(80).optional().or(z.literal("")),
