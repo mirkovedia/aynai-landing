@@ -60,6 +60,12 @@ export default async function DashboardPage() {
               </dd>
             </div>
           </dl>
+          <a
+            href="/perfil"
+            className="mt-4 inline-block text-sm font-semibold text-red hover:underline"
+          >
+            Ver y editar mi perfil →
+          </a>
         </div>
       </div>
 
