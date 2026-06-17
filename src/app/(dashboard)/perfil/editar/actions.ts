@@ -24,8 +24,9 @@ export const updateProfile = async (input: ProfileInput): Promise<ActionResult> 
   const supabase = await createClient();
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
+  if (authError || !user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
 
   const { username, full_name, bio, location, availability, modality, links, skills } =
     parsed.data;
