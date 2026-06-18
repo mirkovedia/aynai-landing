@@ -101,7 +101,8 @@ export const respondToRequest = async (input: RespondInput): Promise<ActionResul
   const { error: updateError } = await supabase
     .from("exchange_requests")
     .update({ status: action === "accept" ? "accepted" : "rejected", updated_at: new Date().toISOString() })
-    .eq("id", requestId);
+    .eq("id", requestId)
+    .eq("recipient_id", user.id);
   if (updateError) {
     console.error("respondToRequest update error:", updateError);
     return { error: "No pudimos actualizar la solicitud", code: "DB_ERROR" };
@@ -143,7 +144,8 @@ export const cancelRequest = async (input: CancelInput): Promise<ActionResult> =
   const { error: updateError } = await supabase
     .from("exchange_requests")
     .update({ status: "cancelled", updated_at: new Date().toISOString() })
-    .eq("id", requestId);
+    .eq("id", requestId)
+    .eq("requester_id", user.id);
   if (updateError) {
     console.error("cancelRequest update error:", updateError);
     return { error: "No pudimos cancelar la solicitud", code: "DB_ERROR" };
