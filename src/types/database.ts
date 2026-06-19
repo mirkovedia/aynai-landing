@@ -61,3 +61,20 @@ export interface ExchangeRequest {
   created_at: string;
   updated_at: string;
 }
+
+/** Estado de un pago de comisión. */
+export type PaymentStatus = "pending" | "paid" | "failed";
+
+/** Fila de la tabla commission_payments (una por parte por intercambio). */
+export interface CommissionPayment {
+  id: string;
+  exchange_request_id: string;
+  payer_id: string;
+  amount_bs: number;
+  status: PaymentStatus;
+  provider: string;
+  provider_ref: string | null;
+  qr_payload: string | null;
+  created_at: string;
+  paid_at: string | null;
+}

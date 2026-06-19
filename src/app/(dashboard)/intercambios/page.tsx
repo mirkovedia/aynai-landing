@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ExchangeRequestCard, type ExchangeParty } from "@/components/features/marketplace/ExchangeRequestCard";
-import type { ExchangeRequest } from "@/types/database";
+import type { ExchangeRequest, CommissionPayment } from "@/types/database";
 
 interface PageProps {
   searchParams: Promise<{ tab?: string }>;
@@ -48,6 +48,16 @@ export default async function IntercambiosPage({ searchParams }: PageProps) {
     .returns<(ExchangeParty & { id: string })[]>();
   const partyById = new Map((parties ?? []).map((p) => [p.id, p]));
 
+  // Mis pagos de comisión para los intercambios visibles (para el gate de revelado).
+  const rowIds = rows.map((r) => r.id);
+  const { data: myPayments } = await supabase
+    .from("commission_payments")
+    .select("*")
+    .eq("payer_id", user.id)
+    .in("exchange_request_id", rowIds.length > 0 ? rowIds : ["00000000-0000-0000-0000-000000000000"])
+    .returns<CommissionPayment[]>();
+  const paymentByExchange = new Map((myPayments ?? []).map((p) => [p.exchange_request_id, p]));
+
   const tabClass = (active: boolean) =>
     `rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
       active ? "bg-cocoa text-cream" : "text-cocoa/70 hover:bg-cocoa/5"
@@ -81,6 +91,7 @@ export default async function IntercambiosPage({ searchParams }: PageProps) {
                 request={request}
                 role={activeTab}
                 counterpart={party}
+                myPayment={paymentByExchange.get(request.id) ?? null}
               />
             );
           })

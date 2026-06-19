@@ -31,3 +31,16 @@ export type CancelInput = z.infer<typeof cancelSchema>;
 
 /** Solo se puede aceptar/rechazar/cancelar una solicitud en 'pending'. */
 export const canRespond = (status: ExchangeStatus): boolean => status === "pending";
+
+/** Inicia el pago de la comisión del usuario para un intercambio aceptado. */
+export const startCommissionPaymentSchema = z.object({
+  exchangeRequestId: uuid,
+});
+
+/** Confirma (simula) el pago de un cargo mock. */
+export const confirmMockPaymentSchema = z.object({
+  chargeId: z.string().min(1),
+});
+
+export type StartCommissionPaymentInput = z.infer<typeof startCommissionPaymentSchema>;
+export type ConfirmMockPaymentInput = z.infer<typeof confirmMockPaymentSchema>;

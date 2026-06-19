@@ -27,7 +27,7 @@ export const SearchFilters = () => {
       if (kind) next.set("kind", kind);
       if (loc.trim()) next.set("loc", loc.trim());
       if (avail) next.set("avail", avail);
-      router.replace(`/explorar?${next.toString()}`);
+      router.replace(`/marketplace?${next.toString()}`);
     }, 300);
     return () => {
       if (debounce.current) clearTimeout(debounce.current);

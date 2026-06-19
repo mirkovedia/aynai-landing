@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { respondToRequest, cancelRequest } from "@/app/(dashboard)/intercambios/actions";
-import type { ExchangeRequest, ExchangeStatus, ProfileLinks } from "@/types/database";
+import { CommissionPayment } from "./CommissionPayment";
+import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
+import type { ExchangeRequest, ExchangeStatus, ProfileLinks, CommissionPayment as CommissionPaymentRow } from "@/types/database";
 
 export interface ExchangeParty {
   full_name: string | null;
@@ -17,6 +19,8 @@ interface ExchangeRequestCardProps {
   /** "received" = soy el destinatario; "sent" = yo la envié. */
   role: "received" | "sent";
   counterpart: ExchangeParty;
+  /** Mi pago de comisión para este intercambio (null si aún no existe). */
+  myPayment: CommissionPaymentRow | null;
 }
 
 const statusLabel: Record<ExchangeStatus, string> = {
@@ -34,7 +38,7 @@ const statusColor: Record<ExchangeStatus, string> = {
 };
 
 /** Tarjeta de una solicitud de intercambio (recibida o enviada). */
-export const ExchangeRequestCard = ({ request, role, counterpart }: ExchangeRequestCardProps) => {
+export const ExchangeRequestCard = ({ request, role, counterpart, myPayment }: ExchangeRequestCardProps) => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -79,25 +83,33 @@ export const ExchangeRequestCard = ({ request, role, counterpart }: ExchangeRequ
         </span>
       </div>
 
-      {/* Al aceptar, revelar links de contacto para coordinar fuera de la plataforma. */}
+      {/* Conexión concretada: revelar contacto solo si YO pagué mi comisión (desbloqueo independiente). */}
       {request.status === "accepted" && (
-        <div className="mt-4 rounded-2xl border border-green/30 bg-green/5 p-4 text-sm">
-          <p className="font-semibold text-cocoa">Contacto de {name}:</p>
-          {hasLinks ? (
-            <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-cocoa/80">
-              {counterpart.links?.web && <li><a className="hover:underline" href={counterpart.links.web} target="_blank" rel="noopener noreferrer">Web</a></li>}
-              {counterpart.links?.linkedin && <li><a className="hover:underline" href={counterpart.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></li>}
-              {counterpart.links?.github && <li><a className="hover:underline" href={counterpart.links.github} target="_blank" rel="noopener noreferrer">GitHub</a></li>}
-              {counterpart.links?.x && <li><a className="hover:underline" href={counterpart.links.x} target="_blank" rel="noopener noreferrer">X</a></li>}
-            </ul>
-          ) : (
-            <p className="mt-1 text-cocoa/60">
-              {counterpart.username
-                ? <>Visita su perfil: <a className="font-semibold text-red hover:underline" href={`/u/${counterpart.username}`}>@{counterpart.username}</a></>
-                : "Esta persona aún no agregó enlaces de contacto."}
-            </p>
-          )}
-        </div>
+        myPayment?.status === "paid" ? (
+          <div className="mt-4 rounded-2xl border border-green/30 bg-green/5 p-4 text-sm">
+            <p className="font-semibold text-cocoa">Contacto de {name}:</p>
+            {hasLinks ? (
+              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-cocoa/80">
+                {counterpart.links?.web && <li><a className="hover:underline" href={counterpart.links.web} target="_blank" rel="noopener noreferrer">Web</a></li>}
+                {counterpart.links?.linkedin && <li><a className="hover:underline" href={counterpart.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></li>}
+                {counterpart.links?.github && <li><a className="hover:underline" href={counterpart.links.github} target="_blank" rel="noopener noreferrer">GitHub</a></li>}
+                {counterpart.links?.x && <li><a className="hover:underline" href={counterpart.links.x} target="_blank" rel="noopener noreferrer">X</a></li>}
+              </ul>
+            ) : (
+              <p className="mt-1 text-cocoa/60">
+                {counterpart.username
+                  ? <>Visita su perfil: <a className="font-semibold text-red hover:underline" href={`/u/${counterpart.username}`}>@{counterpart.username}</a></>
+                  : "Esta persona aún no agregó enlaces de contacto."}
+              </p>
+            )}
+          </div>
+        ) : (
+          <CommissionPayment
+            exchangeRequestId={request.id}
+            counterpartName={name}
+            amountBs={myPayment?.amount_bs ?? COMMISSION_AMOUNT_BS}
+          />
+        )
       )}
 
       {error && <p className="mt-3 text-sm text-red">{error}</p>}
