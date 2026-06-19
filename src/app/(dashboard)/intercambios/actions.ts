@@ -7,11 +7,17 @@ import {
   respondSchema,
   cancelSchema,
   canRespond,
+  startCommissionPaymentSchema,
+  confirmMockPaymentSchema,
   type CreateExchangeInput,
   type RespondInput,
   type CancelInput,
+  type StartCommissionPaymentInput,
+  type ConfirmMockPaymentInput,
 } from "@/lib/marketplace/schema";
-import type { ExchangeRequest } from "@/types/database";
+import { getPaymentProvider } from "@/lib/payments";
+import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
+import type { ExchangeRequest, CommissionPayment } from "@/types/database";
 
 export interface ActionResult {
   error?: string;
@@ -98,14 +104,28 @@ export const respondToRequest = async (input: RespondInput): Promise<ActionResul
     return { error: "Esta solicitud ya fue resuelta", code: "INVALID_STATE" };
   }
 
+  const newStatus = action === "accept" ? "accepted" : "rejected";
   const { error: updateError } = await supabase
     .from("exchange_requests")
-    .update({ status: action === "accept" ? "accepted" : "rejected", updated_at: new Date().toISOString() })
+    .update({ status: newStatus, updated_at: new Date().toISOString() })
     .eq("id", requestId)
     .eq("recipient_id", user.id);
   if (updateError) {
     console.error("respondToRequest update error:", updateError);
     return { error: "No pudimos actualizar la solicitud", code: "DB_ERROR" };
+  }
+
+  // Al aceptar, crear las comisiones pendientes de ambas partes (idempotente por unique).
+  if (action === "accept") {
+    const provider = getPaymentProvider();
+    const { error: paymentsError } = await supabase.from("commission_payments").insert([
+      { exchange_request_id: requestId, payer_id: row.requester_id, amount_bs: COMMISSION_AMOUNT_BS, provider: provider.name },
+      { exchange_request_id: requestId, payer_id: row.recipient_id, amount_bs: COMMISSION_AMOUNT_BS, provider: provider.name },
+    ]);
+    if (paymentsError) {
+      console.error("respondToRequest payments insert error:", paymentsError);
+      // No bloquea la aceptación: las filas pueden crearse luego en startCommissionPayment.
+    }
   }
 
   revalidatePath("/intercambios");
@@ -149,6 +169,126 @@ export const cancelRequest = async (input: CancelInput): Promise<ActionResult> =
   if (updateError) {
     console.error("cancelRequest update error:", updateError);
     return { error: "No pudimos cancelar la solicitud", code: "DB_ERROR" };
+  }
+
+  revalidatePath("/intercambios");
+  return {};
+};
+
+/** Inicia (o reanuda) el pago de la comisión del usuario para un intercambio aceptado. */
+export const startCommissionPayment = async (
+  input: StartCommissionPaymentInput
+): Promise<ActionResult & { qrPayload?: string; chargeId?: string }> => {
+  const parsed = startCommissionPaymentSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "Datos inválidos", code: "VALIDATION_ERROR", details: parsed.error.flatten() };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
+
+  const { exchangeRequestId } = parsed.data;
+
+  // El intercambio debe existir, el usuario ser parte y estar aceptado.
+  const { data: exchange } = await supabase
+    .from("exchange_requests")
+    .select("*")
+    .eq("id", exchangeRequestId)
+    .maybeSingle<ExchangeRequest>();
+  if (!exchange) return { error: "Solicitud no encontrada", code: "NOT_FOUND" };
+  if (![exchange.requester_id, exchange.recipient_id].includes(user.id)) {
+    return { error: "No eres parte de este intercambio", code: "FORBIDDEN" };
+  }
+  if (exchange.status !== "accepted") {
+    return { error: "El intercambio aún no está aceptado", code: "NOT_ACCEPTED" };
+  }
+
+  // Buscar el pago propio (lo crea respondToRequest; si faltara, se crea aquí).
+  let { data: payment } = await supabase
+    .from("commission_payments")
+    .select("*")
+    .eq("exchange_request_id", exchangeRequestId)
+    .eq("payer_id", user.id)
+    .maybeSingle<CommissionPayment>();
+
+  if (payment?.status === "paid") {
+    return { error: "Ya pagaste esta comisión", code: "ALREADY_PAID" };
+  }
+
+  const provider = getPaymentProvider();
+
+  if (!payment) {
+    const { data: created, error: insertError } = await supabase
+      .from("commission_payments")
+      .insert({ exchange_request_id: exchangeRequestId, payer_id: user.id, amount_bs: COMMISSION_AMOUNT_BS, provider: provider.name })
+      .select("*")
+      .single<CommissionPayment>();
+    if (insertError || !created) {
+      console.error("startCommissionPayment insert error:", insertError);
+      return { error: "No pudimos iniciar el pago", code: "DB_ERROR" };
+    }
+    payment = created;
+  }
+
+  // Reusar el cargo si ya existe; si no, crearlo con el proveedor.
+  if (payment.provider_ref && payment.qr_payload) {
+    return { qrPayload: payment.qr_payload, chargeId: payment.provider_ref };
+  }
+
+  const charge = await provider.createCharge({ amountBs: payment.amount_bs, reference: payment.id });
+
+  const { error: chargeError } = await supabase
+    .from("commission_payments")
+    .update({ provider_ref: charge.chargeId, qr_payload: charge.qrPayload })
+    .eq("id", payment.id)
+    .eq("payer_id", user.id);
+  if (chargeError) {
+    console.error("startCommissionPayment charge update error:", chargeError);
+    return { error: "No pudimos generar el cobro", code: "PAYMENT_PROVIDER_ERROR" };
+  }
+
+  return { qrPayload: charge.qrPayload, chargeId: charge.chargeId };
+};
+
+/** Confirma (simula) el pago de la comisión del usuario. En producción esto lo hará el webhook del PSP. */
+export const confirmMockPayment = async (
+  input: ConfirmMockPaymentInput
+): Promise<ActionResult> => {
+  const parsed = confirmMockPaymentSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "Datos inválidos", code: "VALIDATION_ERROR", details: parsed.error.flatten() };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
+
+  const { chargeId } = parsed.data;
+
+  const { data: payment } = await supabase
+    .from("commission_payments")
+    .select("*")
+    .eq("provider_ref", chargeId)
+    .eq("payer_id", user.id)
+    .maybeSingle<CommissionPayment>();
+  if (!payment) return { error: "Cobro no encontrado", code: "NOT_FOUND" };
+  if (payment.status === "paid") return {};
+
+  const { error: updateError } = await supabase
+    .from("commission_payments")
+    .update({ status: "paid", paid_at: new Date().toISOString() })
+    .eq("id", payment.id)
+    .eq("payer_id", user.id);
+  if (updateError) {
+    console.error("confirmMockPayment update error:", updateError);
+    return { error: "No pudimos confirmar el pago", code: "DB_ERROR" };
   }
 
   revalidatePath("/intercambios");
