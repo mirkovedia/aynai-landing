@@ -4,6 +4,8 @@ import {
   respondSchema,
   cancelSchema,
   canRespond,
+  startCommissionPaymentSchema,
+  confirmMockPaymentSchema,
 } from "@/lib/marketplace/schema";
 
 const uuid = "11111111-1111-1111-1111-111111111111";
@@ -96,5 +98,27 @@ describe("canRespond", () => {
     expect(canRespond("accepted")).toBe(false);
     expect(canRespond("rejected")).toBe(false);
     expect(canRespond("cancelled")).toBe(false);
+  });
+});
+
+describe("startCommissionPaymentSchema", () => {
+  const uuid = "11111111-1111-1111-1111-111111111111";
+
+  it("acepta un exchangeRequestId uuid", () => {
+    expect(startCommissionPaymentSchema.safeParse({ exchangeRequestId: uuid }).success).toBe(true);
+  });
+
+  it("rechaza un exchangeRequestId que no es uuid", () => {
+    expect(startCommissionPaymentSchema.safeParse({ exchangeRequestId: "x" }).success).toBe(false);
+  });
+});
+
+describe("confirmMockPaymentSchema", () => {
+  it("acepta un chargeId no vacío", () => {
+    expect(confirmMockPaymentSchema.safeParse({ chargeId: "AYNI-MOCK-abc" }).success).toBe(true);
+  });
+
+  it("rechaza un chargeId vacío", () => {
+    expect(confirmMockPaymentSchema.safeParse({ chargeId: "" }).success).toBe(false);
   });
 });
