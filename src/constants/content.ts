@@ -22,7 +22,10 @@ import {
   Compass,
   Coins,
   TrendingUp,
+  HandCoins,
 } from "lucide-react";
+
+import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
 
 export const NAV_LINKS = [
   { label: "Inicio", href: "#inicio" },
@@ -68,20 +71,26 @@ export const STEPS: StepItem[] = [
   {
     number: "01",
     icon: Megaphone,
-    title: "Publica tu habilidad",
-    description: "Describe lo que sabes hacer y la IA te conecta con quien lo necesita, al instante.",
+    title: "Explora y publica",
+    description: "Descubre a todas las personas y publica lo que sabes hacer. Explorar es gratis.",
   },
   {
     number: "02",
     icon: Repeat,
-    title: "Intercambia o cobra",
-    description: "Con dinero o por trueque de habilidades. Tú decides cómo cierras cada trato.",
+    title: "Propón un Ayni",
+    description: "Elige qué ofreces y qué quieres de alguien. Proponer no cuesta nada.",
   },
   {
     number: "03",
     icon: Award,
-    title: "Gana reputación on-chain",
-    description: "Cada trabajo suma a tu AynAI Score. Es tuyo para siempre, nadie puede borrarlo.",
+    title: "Acepta y construye reputación",
+    description: "Si la otra parte acepta, se concreta la conexión y cada trabajo suma a tu AynAI Score.",
+  },
+  {
+    number: "04",
+    icon: HandCoins,
+    title: "Paga y conecta",
+    description: `Cada parte paga Bs ${COMMISSION_AMOUNT_BS} para revelar el contacto del otro y coordinar. Sin suscripciones.`,
   },
 ];
 
