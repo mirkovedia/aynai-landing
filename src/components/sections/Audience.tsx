@@ -6,7 +6,7 @@ import { Reveal } from "@/components/shared/Reveal";
  * Sección Para quién es — tarjetas con los cuatro públicos objetivo.
  */
 export const Audience = () => (
-  <section className="relative bg-cream-200 py-24 sm:py-32">
+  <section className="relative bg-cream-200 py-20 sm:py-24">
     <div className="mx-auto max-w-6xl px-5 sm:px-8">
       <SectionHeading
         eyebrow="Para quién es"
