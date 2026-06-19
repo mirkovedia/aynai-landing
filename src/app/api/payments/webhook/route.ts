@@ -21,13 +21,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Webhook inválido", code: "INVALID_WEBHOOK" }, { status: 400 });
   }
 
+  const update: { status: typeof parsed.status; paid_at?: string } = { status: parsed.status };
+  if (parsed.status === "paid") {
+    update.paid_at = new Date().toISOString();
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("commission_payments")
-    .update({
-      status: parsed.status,
-      paid_at: parsed.status === "paid" ? new Date().toISOString() : null,
-    })
+    .update(update)
     .eq("provider_ref", parsed.chargeId);
   if (error) {
     console.error("payments webhook update error:", error);

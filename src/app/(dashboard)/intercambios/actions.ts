@@ -239,7 +239,13 @@ export const startCommissionPayment = async (
     return { qrPayload: payment.qr_payload, chargeId: payment.provider_ref };
   }
 
-  const charge = await provider.createCharge({ amountBs: payment.amount_bs, reference: payment.id });
+  let charge;
+  try {
+    charge = await provider.createCharge({ amountBs: payment.amount_bs, reference: payment.id });
+  } catch (err) {
+    console.error("startCommissionPayment createCharge error:", err);
+    return { error: "No pudimos generar el cobro", code: "PAYMENT_PROVIDER_ERROR" };
+  }
 
   const { error: chargeError } = await supabase
     .from("commission_payments")
