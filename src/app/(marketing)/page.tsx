@@ -10,7 +10,7 @@ import { FinalCta } from "@/components/sections/FinalCta";
 /** Landing pública de AynAI. Navbar y Footer viven en el layout de (marketing). */
 export default function Home() {
   return (
-    <main>
+    <main id="contenido">
       <Hero />
       <Problem />
       <HowItWorks />
