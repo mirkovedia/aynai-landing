@@ -36,8 +36,8 @@ export default async function DashboardLayout({
               <span className="text-red">AI</span>
             </Link>
             <nav className="hidden items-center gap-5 sm:flex">
-              <Link href="/explorar" className="text-sm font-medium text-cocoa/75 transition-colors hover:text-red">
-                Explorar
+              <Link href="/marketplace" className="text-sm font-medium text-cocoa/75 transition-colors hover:text-red">
+                Marketplace
               </Link>
               <Link href="/intercambios" className="relative text-sm font-medium text-cocoa/75 transition-colors hover:text-red">
                 Intercambios

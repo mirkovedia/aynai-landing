@@ -45,7 +45,7 @@ export const AuthForm = ({ mode }: { mode: Mode }) => {
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/marketplace");
     router.refresh();
   };
 
