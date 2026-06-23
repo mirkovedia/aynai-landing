@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ExchangeRequestCard, type ExchangeParty } from "@/components/features/marketplace/ExchangeRequestCard";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 import type { ExchangeRequest, CommissionPayment } from "@/types/database";
 
 interface PageProps {
@@ -78,9 +80,29 @@ export default async function IntercambiosPage({ searchParams }: PageProps) {
 
       <div className="mt-8 space-y-4">
         {rows.length === 0 ? (
-          <p className="text-center text-sm text-cocoa/50">
-            {activeTab === "received" ? "Aún no tienes solicitudes recibidas." : "Aún no has enviado solicitudes."}
-          </p>
+          activeTab === "received" ? (
+            <EmptyState
+              icon="📬"
+              title="Aún no tienes solicitudes recibidas"
+              description="Cuando alguien quiera intercambiar contigo, su propuesta aparecerá aquí."
+              action={
+                <Button as="a" href="/marketplace" size="sm">
+                  Explorar el marketplace
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState
+              icon="✉️"
+              title="Aún no has enviado propuestas"
+              description="Encuentra a alguien con quien hacer un Ayni y envía tu primera propuesta de intercambio."
+              action={
+                <Button as="a" href="/marketplace" size="sm">
+                  Buscar personas
+                </Button>
+              }
+            />
+          )
         ) : (
           rows.map((request) => {
             const counterpartId = activeTab === "received" ? request.requester_id : request.recipient_id;

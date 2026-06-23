@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { startCommissionPayment, confirmMockPayment } from "@/app/(dashboard)/intercambios/actions";
 
 interface CommissionPaymentProps {
@@ -14,24 +15,23 @@ interface CommissionPaymentProps {
 /** Flujo de pago de la comisión: genera un QR simulado y permite confirmarlo (mock). */
 export const CommissionPayment = ({ exchangeRequestId, counterpartName, amountBs }: CommissionPaymentProps) => {
   const router = useRouter();
+  const { toast } = useToast();
   const [qrPayload, setQrPayload] = useState<string | null>(null);
   const [chargeId, setChargeId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const handleStart = async () => {
-    setError(null);
     setBusy(true);
     try {
       const result = await startCommissionPayment({ exchangeRequestId });
       if (result.error) {
-        setError(result.error);
+        toast(result.error, "error");
         return;
       }
       setQrPayload(result.qrPayload ?? null);
       setChargeId(result.chargeId ?? null);
     } catch {
-      setError("Ocurrió un error inesperado. Intenta de nuevo.");
+      toast("Ocurrió un error inesperado. Intenta de nuevo.", "error");
     } finally {
       setBusy(false);
     }
@@ -39,17 +39,17 @@ export const CommissionPayment = ({ exchangeRequestId, counterpartName, amountBs
 
   const handleConfirm = async () => {
     if (!chargeId) return;
-    setError(null);
     setBusy(true);
     try {
       const result = await confirmMockPayment({ chargeId });
       if (result.error) {
-        setError(result.error);
+        toast(result.error, "error");
         return;
       }
+      toast(`¡Conexión desbloqueada con ${counterpartName}!`, "success");
       router.refresh();
     } catch {
-      setError("Ocurrió un error inesperado. Intenta de nuevo.");
+      toast("Ocurrió un error inesperado. Intenta de nuevo.", "error");
     } finally {
       setBusy(false);
     }
@@ -61,11 +61,9 @@ export const CommissionPayment = ({ exchangeRequestId, counterpartName, amountBs
         Paga tu comisión (Bs {amountBs}) para ver el contacto de {counterpartName}.
       </p>
 
-      {error && <p className="mt-2 text-sm text-red">{error}</p>}
-
       {!qrPayload ? (
-        <Button as="button" type="button" size="sm" className="mt-3" disabled={busy} onClick={handleStart}>
-          {busy ? "Generando..." : `Pagar comisión (Bs ${amountBs})`}
+        <Button as="button" type="button" size="sm" className="mt-3" loading={busy} onClick={handleStart}>
+          {busy ? "Generando…" : `Pagar comisión (Bs ${amountBs})`}
         </Button>
       ) : (
         <div className="mt-3 space-y-3">
@@ -73,8 +71,8 @@ export const CommissionPayment = ({ exchangeRequestId, counterpartName, amountBs
             <p className="text-xs text-cocoa/60">Escanea este QR (simulado) para pagar:</p>
             <pre className="mt-1 overflow-x-auto rounded-xl border border-cream-300 bg-white px-3 py-3 text-xs text-cocoa">{qrPayload}</pre>
           </div>
-          <Button as="button" type="button" size="sm" disabled={busy} onClick={handleConfirm}>
-            {busy ? "Confirmando..." : "Ya pagué (simular)"}
+          <Button as="button" type="button" size="sm" loading={busy} onClick={handleConfirm}>
+            {busy ? "Confirmando…" : "Ya pagué (simular)"}
           </Button>
         </div>
       )}

@@ -37,6 +37,8 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     ? await searchProfiles({ q, kind: normalizedKind, loc, avail, excludeUserId: user.id })
     : await listProfiles({ excludeUserId: user.id, kind: normalizedKind, loc, avail });
 
+  const hasFilters = Boolean(q?.trim() || normalizedKind || loc?.trim() || avail);
+
   return (
     <main className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
       <h1 className="font-serif text-4xl font-bold text-cocoa">Marketplace</h1>
@@ -52,7 +54,14 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
         <SearchFilters />
       </div>
 
-      <ResultsGrid results={results} myOffers={myOffers} />
+      {results.length > 0 && (
+        <p className="mt-8 text-sm text-cocoa/60">
+          {results.length} {results.length === 1 ? "persona" : "personas"}
+          {hasFilters && " con esos criterios"}
+        </p>
+      )}
+
+      <ResultsGrid results={results} myOffers={myOffers} query={q?.trim()} hasFilters={hasFilters} />
     </main>
   );
 }

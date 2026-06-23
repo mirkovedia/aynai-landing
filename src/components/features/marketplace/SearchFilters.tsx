@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Spinner } from "@/components/ui/spinner";
 
 const fieldClass =
   "w-full rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-sm text-cocoa focus:border-gold focus:outline-none";
@@ -11,6 +12,7 @@ const labelClass = "block text-sm font-medium text-cocoa/70";
 export const SearchFilters = () => {
   const router = useRouter();
   const params = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
   const [q, setQ] = useState(params.get("q") ?? "");
   const [kind, setKind] = useState(params.get("kind") ?? "");
@@ -19,6 +21,7 @@ export const SearchFilters = () => {
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sincroniza la URL cuando cambian los filtros (debounce para no spamear la navegación).
+  // startTransition mantiene `isPending` hasta que el Server Component re-renderiza.
   useEffect(() => {
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(() => {
@@ -27,7 +30,7 @@ export const SearchFilters = () => {
       if (kind) next.set("kind", kind);
       if (loc.trim()) next.set("loc", loc.trim());
       if (avail) next.set("avail", avail);
-      router.replace(`/marketplace?${next.toString()}`);
+      startTransition(() => router.replace(`/marketplace?${next.toString()}`));
     }, 300);
     return () => {
       if (debounce.current) clearTimeout(debounce.current);
@@ -35,7 +38,12 @@ export const SearchFilters = () => {
   }, [q, kind, loc, avail, router]);
 
   return (
-    <div className="grid gap-4 rounded-3xl border border-cream-300 bg-white p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+    <div className="relative grid gap-4 rounded-3xl border border-cream-300 bg-white p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+      {isPending && (
+        <span className="absolute right-4 top-4 flex items-center gap-1.5 text-xs text-cocoa/50">
+          <Spinner className="h-3.5 w-3.5" /> Buscando…
+        </span>
+      )}
       <div>
         <label htmlFor="q" className={labelClass}>Habilidad</label>
         <input

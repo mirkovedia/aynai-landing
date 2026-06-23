@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 import { respondToRequest, cancelRequest } from "@/app/(dashboard)/intercambios/actions";
 import { CommissionPayment } from "./CommissionPayment";
 import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
@@ -37,25 +40,41 @@ const statusColor: Record<ExchangeStatus, string> = {
   cancelled: "bg-cocoa/10 text-cocoa/60",
 };
 
+/** Acción destructiva pendiente de confirmación. */
+type PendingConfirm = "reject" | "cancel" | null;
+
 /** Tarjeta de una solicitud de intercambio (recibida o enviada). */
 export const ExchangeRequestCard = ({ request, role, counterpart, myPayment }: ExchangeRequestCardProps) => {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
   const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState<PendingConfirm>(null);
 
   const name = counterpart.full_name?.trim() || counterpart.username || "Usuario";
 
-  const run = async (fn: () => Promise<{ error?: string }>) => {
-    setError(null);
+  const run = async (fn: () => Promise<{ error?: string }>, successMsg: string) => {
     setBusy(true);
     try {
       const result = await fn();
-      if (result.error) setError(result.error);
-      else router.refresh();
+      if (result.error) {
+        toast(result.error, "error");
+      } else {
+        toast(successMsg, "success");
+        router.refresh();
+      }
     } catch {
-      setError("Ocurrió un error inesperado. Intenta de nuevo.");
+      toast("Ocurrió un error inesperado. Intenta de nuevo.", "error");
     } finally {
       setBusy(false);
+      setConfirming(null);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (confirming === "reject") {
+      void run(() => respondToRequest({ requestId: request.id, action: "reject" }), "Propuesta rechazada");
+    } else if (confirming === "cancel") {
+      void run(() => cancelRequest({ requestId: request.id }), "Propuesta cancelada");
     }
   };
 
@@ -86,8 +105,15 @@ export const ExchangeRequestCard = ({ request, role, counterpart, myPayment }: E
       {/* Conexión concretada: revelar contacto solo si YO pagué mi comisión (desbloqueo independiente). */}
       {request.status === "accepted" && (
         myPayment?.status === "paid" ? (
-          <div className="mt-4 rounded-2xl border border-green/30 bg-green/5 p-4 text-sm">
-            <p className="font-semibold text-cocoa">Contacto de {name}:</p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97, y: 6 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="mt-4 rounded-2xl border border-green/40 bg-green/5 p-4 text-sm shadow-[0_0_0_3px_rgba(34,139,87,0.08)]"
+          >
+            <p className="flex items-center gap-1.5 font-semibold text-cocoa">
+              <span aria-hidden="true">🎉</span> Contacto de {name}:
+            </p>
             {hasLinks ? (
               <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-cocoa/80">
                 {counterpart.links?.web && <li><a className="hover:underline" href={counterpart.links.web} target="_blank" rel="noopener noreferrer">Web</a></li>}
@@ -102,7 +128,7 @@ export const ExchangeRequestCard = ({ request, role, counterpart, myPayment }: E
                   : "Esta persona aún no agregó enlaces de contacto."}
               </p>
             )}
-          </div>
+          </motion.div>
         ) : (
           <CommissionPayment
             exchangeRequestId={request.id}
@@ -112,26 +138,45 @@ export const ExchangeRequestCard = ({ request, role, counterpart, myPayment }: E
         )
       )}
 
-      {error && <p className="mt-3 text-sm text-red">{error}</p>}
-
       {request.status === "pending" && (
         <div className="mt-4 flex gap-3">
           {role === "received" ? (
             <>
-              <Button as="button" type="button" size="sm" disabled={busy} onClick={() => run(() => respondToRequest({ requestId: request.id, action: "accept" }))}>
+              <Button
+                as="button"
+                type="button"
+                size="sm"
+                loading={busy}
+                onClick={() => run(() => respondToRequest({ requestId: request.id, action: "accept" }), "Solicitud aceptada")}
+              >
                 Aceptar
               </Button>
-              <Button as="button" type="button" variant="ghost" size="sm" disabled={busy} onClick={() => run(() => respondToRequest({ requestId: request.id, action: "reject" }))}>
+              <Button as="button" type="button" variant="ghost" size="sm" disabled={busy} onClick={() => setConfirming("reject")}>
                 Rechazar
               </Button>
             </>
           ) : (
-            <Button as="button" type="button" variant="ghost" size="sm" disabled={busy} onClick={() => run(() => cancelRequest({ requestId: request.id }))}>
+            <Button as="button" type="button" variant="ghost" size="sm" disabled={busy} onClick={() => setConfirming("cancel")}>
               Cancelar
             </Button>
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirming !== null}
+        title={confirming === "reject" ? "¿Rechazar esta propuesta?" : "¿Cancelar esta propuesta?"}
+        description={
+          confirming === "reject"
+            ? `${name} ya no podrá concretar este intercambio contigo.`
+            : "Se retirará tu propuesta. Podrás enviar otra más tarde."
+        }
+        confirmLabel={confirming === "reject" ? "Rechazar" : "Cancelar propuesta"}
+        cancelLabel="Volver"
+        loading={busy}
+        onConfirm={handleConfirm}
+        onCancel={() => setConfirming(null)}
+      />
     </div>
   );
 };

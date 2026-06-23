@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes, AnchorHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { Spinner } from "./spinner";
 
 type Variant = "primary" | "outline" | "gold" | "ghost";
 type Size = "sm" | "md" | "lg";
@@ -30,6 +31,8 @@ interface CommonProps {
   variant?: Variant;
   size?: Size;
   className?: string;
+  /** Muestra un spinner inline y deshabilita el botón mientras dura la acción. */
+  loading?: boolean;
 }
 
 type ButtonProps = CommonProps & ButtonHTMLAttributes<HTMLButtonElement> & { as?: "button" };
@@ -42,18 +45,36 @@ type Props = ButtonProps | LinkProps;
  * variantes de la marca AynAI. `as="a"` lo convierte en ancla.
  */
 export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, Props>(
-  ({ variant = "primary", size = "md", className, ...props }, ref) => {
+  ({ variant = "primary", size = "md", className, as = "button", loading = false, children, ...rest }, ref) => {
     const classes = cn(base, variants[variant], sizes[size], className);
+    const content = (
+      <>
+        {loading && <Spinner className="h-4 w-4" />}
+        {children}
+      </>
+    );
 
-    if (props.as === "a") {
-      const anchorProps = { ...props };
-      delete anchorProps.as;
-      return <a ref={ref} className={classes} {...anchorProps} />;
+    // Desestructuramos `as` para no propagarlo al DOM; el resto de props
+    // se castea al tipo del elemento concreto que renderizamos.
+    if (as === "a") {
+      return (
+        <a ref={ref} className={classes} {...(rest as AnchorHTMLAttributes<HTMLAnchorElement>)}>
+          {content}
+        </a>
+      );
     }
 
-    const buttonProps = { ...props } as ButtonProps;
-    delete buttonProps.as;
-    return <button ref={ref} className={classes} {...buttonProps} />;
+    const buttonRest = rest as ButtonHTMLAttributes<HTMLButtonElement>;
+    return (
+      <button
+        ref={ref}
+        className={classes}
+        {...buttonRest}
+        disabled={loading || buttonRest.disabled}
+      >
+        {content}
+      </button>
+    );
   }
 );
 

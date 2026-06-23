@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ToastProvider } from "@/components/ui/toast";
 import { signOut } from "./actions";
 
 /** Shell del área privada: topbar con logo, navegación y botón de cerrar sesión. */
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
   }
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-cream">
       <header className="border-b border-cream-300 bg-cream/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5 sm:px-8">
@@ -61,5 +63,6 @@ export default async function DashboardLayout({
       </header>
       {children}
     </div>
+    </ToastProvider>
   );
 }
