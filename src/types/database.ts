@@ -98,3 +98,24 @@ export interface RatingSummary {
   average: number;
   count: number;
 }
+
+/** Tipos de evento que generan una notificación. */
+export type NotificationType =
+  | "request_received"
+  | "request_accepted"
+  | "request_rejected"
+  | "commission_paid"
+  | "exchange_completed"
+  | "rating_received";
+
+/** Fila de la tabla notifications. */
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  body: string | null;
+  link: string | null;
+  read: boolean;
+  created_at: string;
+}
