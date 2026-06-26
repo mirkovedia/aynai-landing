@@ -47,7 +47,7 @@ export interface WaitlistEntry {
 }
 
 /** Estado de una solicitud de intercambio. */
-export type ExchangeStatus = "pending" | "accepted" | "rejected" | "cancelled";
+export type ExchangeStatus = "pending" | "accepted" | "rejected" | "cancelled" | "completed";
 
 /** Fila de la tabla exchange_requests. */
 export interface ExchangeRequest {
@@ -58,6 +58,9 @@ export interface ExchangeRequest {
   want_skill: string;
   message: string | null;
   status: ExchangeStatus;
+  requester_confirmed: boolean;
+  recipient_confirmed: boolean;
+  completed_at: string | null;
   created_at: string;
   updated_at: string;
 }

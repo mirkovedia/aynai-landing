@@ -31,6 +31,7 @@ const statusLabel: Record<ExchangeStatus, string> = {
   accepted: "Aceptada",
   rejected: "Rechazada",
   cancelled: "Cancelada",
+  completed: "Completado",
 };
 
 const statusColor: Record<ExchangeStatus, string> = {
@@ -38,6 +39,7 @@ const statusColor: Record<ExchangeStatus, string> = {
   accepted: "bg-green/10 text-green",
   rejected: "bg-red/10 text-red",
   cancelled: "bg-cocoa/10 text-cocoa/60",
+  completed: "bg-green/15 text-green",
 };
 
 /** Acción destructiva pendiente de confirmación. */
