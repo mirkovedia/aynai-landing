@@ -81,3 +81,20 @@ export interface CommissionPayment {
   created_at: string;
   paid_at: string | null;
 }
+
+/** Fila de la tabla ratings. */
+export interface Rating {
+  id: string;
+  exchange_request_id: string;
+  rater_id: string;
+  ratee_id: string;
+  stars: number;
+  comment: string | null;
+  created_at: string;
+}
+
+/** Resumen de reputación de un perfil (calculado en consulta). */
+export interface RatingSummary {
+  average: number;
+  count: number;
+}
