@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
-import { respondToRequest, cancelRequest } from "@/app/(dashboard)/intercambios/actions";
+import { respondToRequest, cancelRequest, confirmExchange } from "@/app/(dashboard)/intercambios/actions";
 import { CommissionPayment } from "./CommissionPayment";
 import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
 import type { ExchangeRequest, ExchangeStatus, ProfileLinks, CommissionPayment as CommissionPaymentRow } from "@/types/database";
@@ -84,6 +84,8 @@ export const ExchangeRequestCard = ({ request, role, counterpart, myPayment }: E
     counterpart.links?.web || counterpart.links?.linkedin || counterpart.links?.github || counterpart.links?.x
   );
 
+  const iConfirmed = role === "received" ? request.recipient_confirmed : request.requester_confirmed;
+
   return (
     <div className="rounded-3xl border border-cream-300 bg-white p-6 shadow-sm">
       <div className="flex items-start justify-between gap-4">
@@ -138,6 +140,25 @@ export const ExchangeRequestCard = ({ request, role, counterpart, myPayment }: E
             amountBs={myPayment?.amount_bs ?? COMMISSION_AMOUNT_BS}
           />
         )
+      )}
+
+      {request.status === "accepted" && (
+        <div className="mt-4 border-t border-cream-200 pt-4">
+          {iConfirmed ? (
+            <p className="text-sm text-cocoa/60">⏳ Esperando que {name} confirme el intercambio.</p>
+          ) : (
+            <Button
+              as="button"
+              type="button"
+              size="sm"
+              variant="ghost"
+              loading={busy}
+              onClick={() => run(() => confirmExchange({ requestId: request.id }), "¡Intercambio confirmado!")}
+            >
+              Marcar como completado
+            </Button>
+          )}
+        </div>
       )}
 
       {request.status === "pending" && (
