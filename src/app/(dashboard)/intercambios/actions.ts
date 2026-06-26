@@ -7,11 +7,14 @@ import {
   respondSchema,
   cancelSchema,
   canRespond,
+  confirmExchangeSchema,
+  canConfirm,
   startCommissionPaymentSchema,
   confirmMockPaymentSchema,
   type CreateExchangeInput,
   type RespondInput,
   type CancelInput,
+  type ConfirmExchangeInput,
   type StartCommissionPaymentInput,
   type ConfirmMockPaymentInput,
 } from "@/lib/marketplace/schema";
@@ -169,6 +172,52 @@ export const cancelRequest = async (input: CancelInput): Promise<ActionResult> =
   if (updateError) {
     console.error("cancelRequest update error:", updateError);
     return { error: "No pudimos cancelar la solicitud", code: "DB_ERROR" };
+  }
+
+  revalidatePath("/intercambios");
+  return {};
+};
+
+/** Una de las partes confirma que el intercambio se concretó. Cuando ambas confirman, el trigger lo marca 'completed'. */
+export const confirmExchange = async (input: ConfirmExchangeInput): Promise<ActionResult> => {
+  const parsed = confirmExchangeSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "Datos inválidos", code: "VALIDATION_ERROR", details: parsed.error.flatten() };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
+
+  const { requestId } = parsed.data;
+
+  const { data: row } = await supabase
+    .from("exchange_requests")
+    .select("*")
+    .eq("id", requestId)
+    .maybeSingle<ExchangeRequest>();
+  if (!row) return { error: "Solicitud no encontrada", code: "NOT_FOUND" };
+
+  const isRequester = row.requester_id === user.id;
+  const isRecipient = row.recipient_id === user.id;
+  if (!isRequester && !isRecipient) {
+    return { error: "No eres parte de este intercambio", code: "FORBIDDEN" };
+  }
+  if (!canConfirm(row.status)) {
+    return { error: "Este intercambio no se puede confirmar todavía", code: "INVALID_STATE" };
+  }
+
+  const patch = isRequester ? { requester_confirmed: true } : { recipient_confirmed: true };
+  const { error: updateError } = await supabase
+    .from("exchange_requests")
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq("id", requestId);
+  if (updateError) {
+    console.error("confirmExchange update error:", updateError);
+    return { error: "No pudimos confirmar el intercambio", code: "DB_ERROR" };
   }
 
   revalidatePath("/intercambios");
