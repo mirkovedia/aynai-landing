@@ -22,6 +22,7 @@ import {
 } from "@/lib/marketplace/schema";
 import { getPaymentProvider } from "@/lib/payments";
 import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
+import { notify } from "@/lib/notifications";
 import type { ExchangeRequest, CommissionPayment } from "@/types/database";
 
 export interface ActionResult {
@@ -29,6 +30,19 @@ export interface ActionResult {
   code?: string;
   details?: unknown;
 }
+
+/** Nombre legible del actor para los textos de notificación. */
+const actorName = async (
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<string> => {
+  const { data } = await supabase
+    .from("profiles")
+    .select("full_name, username")
+    .eq("id", userId)
+    .maybeSingle<{ full_name: string | null; username: string | null }>();
+  return data?.full_name?.trim() || data?.username || "Alguien";
+};
 
 /** Crea una solicitud de intercambio 'pending' del usuario autenticado al destinatario. */
 export const createExchangeRequest = async (
@@ -75,6 +89,15 @@ export const createExchangeRequest = async (
     console.error("createExchangeRequest insert error:", insertError);
     return { error: "No pudimos enviar tu propuesta", code: "DB_ERROR" };
   }
+
+  const who = await actorName(supabase, user.id);
+  await notify({
+    userId: recipientId,
+    type: "request_received",
+    title: "Nueva solicitud de intercambio",
+    body: `${who} ofrece ${offerSkill} por ${wantSkill}.`,
+    link: "/intercambios",
+  });
 
   revalidatePath("/intercambios");
   return {};
@@ -132,6 +155,17 @@ export const respondToRequest = async (input: RespondInput): Promise<ActionResul
       // No bloquea la aceptación: las filas pueden crearse luego en startCommissionPayment.
     }
   }
+
+  const who = await actorName(supabase, user.id);
+  await notify({
+    userId: row.requester_id,
+    type: action === "accept" ? "request_accepted" : "request_rejected",
+    title: action === "accept" ? "Tu propuesta fue aceptada" : "Tu propuesta fue rechazada",
+    body: action === "accept"
+      ? `${who} aceptó tu intercambio. Paga la comisión para revelar el contacto.`
+      : `${who} rechazó tu intercambio.`,
+    link: "/intercambios",
+  });
 
   revalidatePath("/intercambios");
   return {};
@@ -222,6 +256,18 @@ export const confirmExchange = async (input: ConfirmExchangeInput): Promise<Acti
     return { error: "No pudimos confirmar el intercambio", code: "DB_ERROR" };
   }
 
+  const { data: after } = await supabase
+    .from("exchange_requests")
+    .select("status, requester_id, recipient_id")
+    .eq("id", requestId)
+    .maybeSingle<{ status: string; requester_id: string; recipient_id: string }>();
+  if (after?.status === "completed") {
+    await Promise.all([
+      notify({ userId: after.requester_id, type: "exchange_completed", title: "Intercambio completado", body: "Ambos confirmaron. ¡Ya puedes calificar!", link: "/intercambios" }),
+      notify({ userId: after.recipient_id, type: "exchange_completed", title: "Intercambio completado", body: "Ambos confirmaron. ¡Ya puedes calificar!", link: "/intercambios" }),
+    ]);
+  }
+
   revalidatePath("/intercambios");
   return {};
 };
@@ -271,6 +317,14 @@ export const submitRating = async (input: SubmitRatingInput): Promise<ActionResu
     console.error("submitRating insert error:", insertError);
     return { error: "No pudimos guardar tu calificación", code: "DB_ERROR" };
   }
+
+  await notify({
+    userId: rateeId,
+    type: "rating_received",
+    title: "Recibiste una calificación",
+    body: `Te dieron ${stars} ${stars === 1 ? "estrella" : "estrellas"}.`,
+    link: "/intercambios",
+  });
 
   revalidatePath("/intercambios");
   return {};
@@ -396,6 +450,23 @@ export const confirmMockPayment = async (
   if (updateError) {
     console.error("confirmMockPayment update error:", updateError);
     return { error: "No pudimos confirmar el pago", code: "DB_ERROR" };
+  }
+
+  const { data: exch } = await supabase
+    .from("exchange_requests")
+    .select("requester_id, recipient_id")
+    .eq("id", payment.exchange_request_id)
+    .maybeSingle<{ requester_id: string; recipient_id: string }>();
+  if (exch) {
+    const other = exch.requester_id === user.id ? exch.recipient_id : exch.requester_id;
+    const who = await actorName(supabase, user.id);
+    await notify({
+      userId: other,
+      type: "commission_paid",
+      title: "Comisión pagada",
+      body: `${who} pagó su comisión. Paga la tuya para concretar el intercambio.`,
+      link: "/intercambios",
+    });
   }
 
   revalidatePath("/intercambios");
