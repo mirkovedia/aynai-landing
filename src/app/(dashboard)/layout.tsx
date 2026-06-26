@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ToastProvider } from "@/components/ui/toast";
+import { NotificationBell } from "@/components/features/notifications/NotificationBell";
 import { signOut } from "./actions";
+import type { Notification } from "@/types/database";
 
 /** Shell del área privada: topbar con logo, navegación y botón de cerrar sesión. */
 export default async function DashboardLayout({
@@ -21,6 +23,18 @@ export default async function DashboardLayout({
       .eq("recipient_id", user.id)
       .eq("status", "pending");
     pendingCount = count ?? 0;
+  }
+
+  let notifications: Notification[] = [];
+  if (user) {
+    const { data } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .returns<Notification[]>();
+    notifications = data ?? [];
   }
 
   return (
@@ -51,14 +65,17 @@ export default async function DashboardLayout({
               </Link>
             </nav>
           </div>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="rounded-full px-4 py-2 text-sm font-semibold text-cocoa/75 transition-colors hover:bg-cocoa/5 hover:text-red"
-            >
-              Cerrar sesión
-            </button>
-          </form>
+          <div className="flex items-center gap-2">
+            {user && <NotificationBell userId={user.id} initial={notifications} />}
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="rounded-full px-4 py-2 text-sm font-semibold text-cocoa/75 transition-colors hover:bg-cocoa/5 hover:text-red"
+              >
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
         </div>
       </header>
       {children}
