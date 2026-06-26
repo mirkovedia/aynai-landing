@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Profile, WaitlistEntry } from "@/types/database";
+import type { Profile } from "@/types/database";
 
-/** Dashboard de perfil: datos del usuario + AynAI Score + waitlist real. */
+/** Dashboard de perfil: datos del usuario + AynAI Score. */
 export default async function DashboardPage() {
   const supabase = await createClient();
 
@@ -17,14 +17,7 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single<Profile>();
 
-  const { data: waitlist } = await supabase
-    .from("waitlist")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .returns<WaitlistEntry[]>();
-
   const displayName = profile?.full_name?.trim() || user.email || "Usuario";
-  const entries = waitlist ?? [];
 
   return (
     <main className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
@@ -67,28 +60,6 @@ export default async function DashboardPage() {
             Ver y editar mi perfil →
           </a>
         </div>
-      </div>
-
-      {/* Waitlist real desde Supabase */}
-      <div className="mt-6 rounded-3xl border border-cream-300 bg-white p-6 shadow-sm">
-        <div className="flex items-baseline justify-between">
-          <p className="text-sm font-medium text-cocoa/60">Lista de espera</p>
-          <span className="font-serif text-2xl font-bold text-red">{entries.length}</span>
-        </div>
-        <ul className="mt-4 divide-y divide-cream-200">
-          {entries.length === 0 ? (
-            <li className="py-3 text-sm text-cocoa/50">Aún no hay registros.</li>
-          ) : (
-            entries.map((entry) => (
-              <li key={entry.id} className="flex justify-between gap-4 py-3 text-sm">
-                <span className="text-cocoa">{entry.email}</span>
-                <span className="text-cocoa/40">
-                  {new Date(entry.created_at).toLocaleDateString("es-BO")}
-                </span>
-              </li>
-            ))
-          )}
-        </ul>
       </div>
     </main>
   );
