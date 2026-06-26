@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { respondToRequest, cancelRequest, confirmExchange } from "@/app/(dashboard)/intercambios/actions";
 import { CommissionPayment } from "./CommissionPayment";
+import { RatingForm } from "./RatingForm";
 import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
 import type { ExchangeRequest, ExchangeStatus, ProfileLinks, CommissionPayment as CommissionPaymentRow } from "@/types/database";
 
@@ -24,6 +25,8 @@ interface ExchangeRequestCardProps {
   counterpart: ExchangeParty;
   /** Mi pago de comisión para este intercambio (null si aún no existe). */
   myPayment: CommissionPaymentRow | null;
+  /** True si el usuario ya calificó este intercambio. */
+  alreadyRated: boolean;
 }
 
 const statusLabel: Record<ExchangeStatus, string> = {
@@ -46,7 +49,7 @@ const statusColor: Record<ExchangeStatus, string> = {
 type PendingConfirm = "reject" | "cancel" | null;
 
 /** Tarjeta de una solicitud de intercambio (recibida o enviada). */
-export const ExchangeRequestCard = ({ request, role, counterpart, myPayment }: ExchangeRequestCardProps) => {
+export const ExchangeRequestCard = ({ request, role, counterpart, myPayment, alreadyRated }: ExchangeRequestCardProps) => {
   const router = useRouter();
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
@@ -159,6 +162,13 @@ export const ExchangeRequestCard = ({ request, role, counterpart, myPayment }: E
             </Button>
           )}
         </div>
+      )}
+
+      {request.status === "completed" && !alreadyRated && (
+        <RatingForm requestId={request.id} counterpartName={name} />
+      )}
+      {request.status === "completed" && alreadyRated && (
+        <p className="mt-4 border-t border-cream-200 pt-4 text-sm text-cocoa/60">✅ Ya calificaste este intercambio.</p>
       )}
 
       {request.status === "pending" && (
