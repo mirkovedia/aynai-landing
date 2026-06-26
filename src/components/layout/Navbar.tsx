@@ -61,7 +61,7 @@ export const Navbar = () => {
     >
       <AnnouncementBar visible={!scrolled} />
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-        <Logo />
+        <Logo light={!scrolled} />
 
         {/* Links de escritorio */}
         <ul className="hidden items-center gap-8 md:flex">
@@ -69,7 +69,10 @@ export const Navbar = () => {
             <li key={link.href}>
               <a
                 href={link.href}
-                className="text-sm font-medium text-cocoa/75 transition-colors hover:text-red"
+                className={cn(
+                  "text-sm font-medium transition-colors",
+                  scrolled ? "text-cocoa/75 hover:text-red" : "text-cream/80 hover:text-gold"
+                )}
               >
                 {link.label}
               </a>
@@ -80,7 +83,10 @@ export const Navbar = () => {
         <div className="hidden items-center gap-3 md:flex">
           <a
             href="/login"
-            className="text-sm font-medium text-cocoa/75 transition-colors hover:text-red"
+            className={cn(
+              "text-sm font-medium transition-colors",
+              scrolled ? "text-cocoa/75 hover:text-red" : "text-cream/80 hover:text-gold"
+            )}
           >
             Iniciar sesión
           </a>
@@ -95,7 +101,10 @@ export const Navbar = () => {
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="rounded-lg p-2 text-cocoa transition-colors hover:bg-cocoa/5 md:hidden"
+          className={cn(
+            "rounded-lg p-2 transition-colors md:hidden",
+            scrolled ? "text-cocoa hover:bg-cocoa/5" : "text-cream hover:bg-white/10"
+          )}
         >
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
