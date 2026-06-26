@@ -9,12 +9,14 @@ import {
   canRespond,
   confirmExchangeSchema,
   canConfirm,
+  submitRatingSchema,
   startCommissionPaymentSchema,
   confirmMockPaymentSchema,
   type CreateExchangeInput,
   type RespondInput,
   type CancelInput,
   type ConfirmExchangeInput,
+  type SubmitRatingInput,
   type StartCommissionPaymentInput,
   type ConfirmMockPaymentInput,
 } from "@/lib/marketplace/schema";
@@ -218,6 +220,56 @@ export const confirmExchange = async (input: ConfirmExchangeInput): Promise<Acti
   if (updateError) {
     console.error("confirmExchange update error:", updateError);
     return { error: "No pudimos confirmar el intercambio", code: "DB_ERROR" };
+  }
+
+  revalidatePath("/intercambios");
+  return {};
+};
+
+/** Califica a la contraparte de un intercambio completado. La RLS valida elegibilidad; el trigger recalcula su score. */
+export const submitRating = async (input: SubmitRatingInput): Promise<ActionResult> => {
+  const parsed = submitRatingSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "Datos inválidos", code: "VALIDATION_ERROR", details: parsed.error.flatten() };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
+
+  const { requestId, stars, comment } = parsed.data;
+
+  const { data: row } = await supabase
+    .from("exchange_requests")
+    .select("*")
+    .eq("id", requestId)
+    .maybeSingle<ExchangeRequest>();
+  if (!row) return { error: "Solicitud no encontrada", code: "NOT_FOUND" };
+  if (row.status !== "completed") {
+    return { error: "Solo puedes calificar intercambios completados", code: "INVALID_STATE" };
+  }
+
+  const rateeId = row.requester_id === user.id ? row.recipient_id : row.requester_id;
+  if (rateeId === user.id) {
+    return { error: "No eres parte de este intercambio", code: "FORBIDDEN" };
+  }
+
+  const { error: insertError } = await supabase.from("ratings").insert({
+    exchange_request_id: requestId,
+    rater_id: user.id,
+    ratee_id: rateeId,
+    stars,
+    comment: comment || null,
+  });
+  if (insertError) {
+    if (insertError.code === "23505") {
+      return { error: "Ya calificaste este intercambio", code: "DUPLICATE" };
+    }
+    console.error("submitRating insert error:", insertError);
+    return { error: "No pudimos guardar tu calificación", code: "DB_ERROR" };
   }
 
   revalidatePath("/intercambios");
