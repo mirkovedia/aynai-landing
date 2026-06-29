@@ -35,6 +35,7 @@ export const ProfileForm = ({ profile, skills }: ProfileFormProps) => {
     linkedin: profile.links.linkedin ?? "",
     github: profile.links.github ?? "",
     x: profile.links.x ?? "",
+    whatsapp: profile.links.whatsapp ?? "",
   });
   const [skillList, setSkillList] = useState<SkillInput[]>(
     skills.map((s) => ({ name: s.name, kind: s.kind, level: s.level ?? undefined }))
@@ -141,6 +142,22 @@ export const ProfileForm = ({ profile, skills }: ProfileFormProps) => {
         <div>
           <label htmlFor="x" className={labelClass}>X / Twitter</label>
           <input id="x" value={links.x} onChange={(e) => setLinks({ ...links, x: e.target.value })} className={fieldClass} placeholder="https://" />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="whatsapp" className={labelClass}>
+            WhatsApp{" "}
+            <span className="text-cocoa/40 font-normal text-xs">
+              (se revela al concretar un Ayni — ej: 59170000000)
+            </span>
+          </label>
+          <input
+            id="whatsapp"
+            value={links.whatsapp}
+            onChange={(e) => setLinks({ ...links, whatsapp: e.target.value })}
+            className={fieldClass}
+            placeholder="59170000000"
+            inputMode="numeric"
+          />
         </div>
       </div>
 

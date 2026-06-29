@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileCard, type PublicProfile } from "@/components/features/profile/ProfileCard";
-import type { UserSkill } from "@/types/database";
+import type { UserSkill, Rating, RatingSummary } from "@/types/database";
 
 /** Columnas públicas del perfil — nunca incluye email. */
 const PUBLIC_COLUMNS =
@@ -31,6 +31,22 @@ export default async function PublicProfilePage({ params }: PageProps) {
     .eq("user_id", profile.id)
     .returns<UserSkill[]>();
 
+  const { data: ratingRows } = await supabase
+    .from("ratings")
+    .select("stars, comment, created_at")
+    .eq("ratee_id", profile.id)
+    .order("created_at", { ascending: false })
+    .returns<Pick<Rating, "stars" | "comment" | "created_at">[]>();
+
+  const allRatings = ratingRows ?? [];
+  const summary: RatingSummary = {
+    count: allRatings.length,
+    average: allRatings.length
+      ? Math.round((allRatings.reduce((s, r) => s + r.stars, 0) / allRatings.length) * 10) / 10
+      : 0,
+  };
+  const recent = allRatings.slice(0, 5);
+
   return (
     <main className="min-h-screen bg-cream">
       <header className="border-b border-cream-300 bg-cream/90 backdrop-blur-md">
@@ -42,7 +58,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
         </div>
       </header>
       <div className="mx-auto max-w-3xl px-5 py-12 sm:px-8">
-        <ProfileCard profile={profile} skills={skills ?? []} />
+        <ProfileCard profile={profile} skills={skills ?? []} ratings={{ summary, recent }} />
       </div>
     </main>
   );

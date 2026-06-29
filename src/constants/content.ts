@@ -128,7 +128,7 @@ export const AUDIENCES: AudienceItem[] = [
 export const COMPARISON = {
   aynai: {
     name: "AynAI",
-    fee: "10–15%",
+    fee: `Bs ${COMMISSION_AMOUNT_BS} fijo`,
     points: [
       { label: "Matching con IA", value: true },
       { label: "Reputación verificable on-chain", value: true },
@@ -203,7 +203,7 @@ export const BMC_DATA: BmcBlock[] = [
     items: [
       "AynAI Score: Reputación portable, inalterable y de tu propiedad (on-chain)",
       "Conexión instantánea y eficiente mediante inteligencia artificial",
-      "Comisión justa y baja (10-15%) frente al 20-30% de la competencia",
+      `Tarifa plana y baja: Bs ${COMMISSION_AMOUNT_BS} por conexión, no un porcentaje de tus ingresos`,
       "Inclusión total: Opera con o sin cuenta bancaria (criptomonedas/trueques)"
     ]
   },
@@ -261,7 +261,7 @@ export const BMC_DATA: BmcBlock[] = [
     icon: TrendingUp,
     description: "Los flujos monetarios que garantizan la sostenibilidad económica a largo plazo de AynAI.",
     items: [
-      "Comisión transaccional del 10% al 15% en contratos cerrados con éxito",
+      `Tarifa plana de Bs ${COMMISSION_AMOUNT_BS} por persona en cada conexión concretada`,
       "Suscripción premium para empresas (herramientas de búsqueda y filtrado avanzado)",
       "Tarifa por verificación oficial y emisión física/portable del AynAI Score",
       "Intereses generados por depósitos en garantía (escrow) en stablecoins"

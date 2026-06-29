@@ -25,6 +25,23 @@ export const cancelSchema = z.object({
   requestId: uuid,
 });
 
+/** Confirmación de completado por una de las partes. */
+export const confirmExchangeSchema = z.object({
+  requestId: uuid,
+});
+export type ConfirmExchangeInput = z.infer<typeof confirmExchangeSchema>;
+
+/** Solo se puede confirmar el completado de un intercambio 'accepted'. */
+export const canConfirm = (status: ExchangeStatus): boolean => status === "accepted";
+
+/** Calificación de la contraparte tras un intercambio completado. */
+export const submitRatingSchema = z.object({
+  requestId: uuid,
+  stars: z.number().int().min(1).max(5),
+  comment: z.string().max(500).optional(),
+});
+export type SubmitRatingInput = z.infer<typeof submitRatingSchema>;
+
 export type CreateExchangeInput = z.infer<typeof createExchangeSchema>;
 export type RespondInput = z.infer<typeof respondSchema>;
 export type CancelInput = z.infer<typeof cancelSchema>;

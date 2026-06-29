@@ -7,16 +7,22 @@ import {
   respondSchema,
   cancelSchema,
   canRespond,
+  confirmExchangeSchema,
+  canConfirm,
+  submitRatingSchema,
   startCommissionPaymentSchema,
   confirmMockPaymentSchema,
   type CreateExchangeInput,
   type RespondInput,
   type CancelInput,
+  type ConfirmExchangeInput,
+  type SubmitRatingInput,
   type StartCommissionPaymentInput,
   type ConfirmMockPaymentInput,
 } from "@/lib/marketplace/schema";
 import { getPaymentProvider } from "@/lib/payments";
 import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
+import { notify } from "@/lib/notifications";
 import type { ExchangeRequest, CommissionPayment } from "@/types/database";
 
 export interface ActionResult {
@@ -24,6 +30,19 @@ export interface ActionResult {
   code?: string;
   details?: unknown;
 }
+
+/** Nombre legible del actor para los textos de notificación. */
+const actorName = async (
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<string> => {
+  const { data } = await supabase
+    .from("profiles")
+    .select("full_name, username")
+    .eq("id", userId)
+    .maybeSingle<{ full_name: string | null; username: string | null }>();
+  return data?.full_name?.trim() || data?.username || "Alguien";
+};
 
 /** Crea una solicitud de intercambio 'pending' del usuario autenticado al destinatario. */
 export const createExchangeRequest = async (
@@ -70,6 +89,15 @@ export const createExchangeRequest = async (
     console.error("createExchangeRequest insert error:", insertError);
     return { error: "No pudimos enviar tu propuesta", code: "DB_ERROR" };
   }
+
+  const who = await actorName(supabase, user.id);
+  await notify({
+    userId: recipientId,
+    type: "request_received",
+    title: "Nueva solicitud de intercambio",
+    body: `${who} ofrece ${offerSkill} por ${wantSkill}.`,
+    link: "/intercambios",
+  });
 
   revalidatePath("/intercambios");
   return {};
@@ -128,6 +156,17 @@ export const respondToRequest = async (input: RespondInput): Promise<ActionResul
     }
   }
 
+  const who = await actorName(supabase, user.id);
+  await notify({
+    userId: row.requester_id,
+    type: action === "accept" ? "request_accepted" : "request_rejected",
+    title: action === "accept" ? "Tu propuesta fue aceptada" : "Tu propuesta fue rechazada",
+    body: action === "accept"
+      ? `${who} aceptó tu intercambio. Paga la comisión para revelar el contacto.`
+      : `${who} rechazó tu intercambio.`,
+    link: "/intercambios",
+  });
+
   revalidatePath("/intercambios");
   return {};
 };
@@ -170,6 +209,122 @@ export const cancelRequest = async (input: CancelInput): Promise<ActionResult> =
     console.error("cancelRequest update error:", updateError);
     return { error: "No pudimos cancelar la solicitud", code: "DB_ERROR" };
   }
+
+  revalidatePath("/intercambios");
+  return {};
+};
+
+/** Una de las partes confirma que el intercambio se concretó. Cuando ambas confirman, el trigger lo marca 'completed'. */
+export const confirmExchange = async (input: ConfirmExchangeInput): Promise<ActionResult> => {
+  const parsed = confirmExchangeSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "Datos inválidos", code: "VALIDATION_ERROR", details: parsed.error.flatten() };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
+
+  const { requestId } = parsed.data;
+
+  const { data: row } = await supabase
+    .from("exchange_requests")
+    .select("*")
+    .eq("id", requestId)
+    .maybeSingle<ExchangeRequest>();
+  if (!row) return { error: "Solicitud no encontrada", code: "NOT_FOUND" };
+
+  const isRequester = row.requester_id === user.id;
+  const isRecipient = row.recipient_id === user.id;
+  if (!isRequester && !isRecipient) {
+    return { error: "No eres parte de este intercambio", code: "FORBIDDEN" };
+  }
+  if (!canConfirm(row.status)) {
+    return { error: "Este intercambio no se puede confirmar todavía", code: "INVALID_STATE" };
+  }
+
+  const patch = isRequester ? { requester_confirmed: true } : { recipient_confirmed: true };
+  const { error: updateError } = await supabase
+    .from("exchange_requests")
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq("id", requestId);
+  if (updateError) {
+    console.error("confirmExchange update error:", updateError);
+    return { error: "No pudimos confirmar el intercambio", code: "DB_ERROR" };
+  }
+
+  const { data: after } = await supabase
+    .from("exchange_requests")
+    .select("status, requester_id, recipient_id")
+    .eq("id", requestId)
+    .maybeSingle<{ status: string; requester_id: string; recipient_id: string }>();
+  if (after?.status === "completed") {
+    await Promise.all([
+      notify({ userId: after.requester_id, type: "exchange_completed", title: "Intercambio completado", body: "Ambos confirmaron. ¡Ya puedes calificar!", link: "/intercambios" }),
+      notify({ userId: after.recipient_id, type: "exchange_completed", title: "Intercambio completado", body: "Ambos confirmaron. ¡Ya puedes calificar!", link: "/intercambios" }),
+    ]);
+  }
+
+  revalidatePath("/intercambios");
+  return {};
+};
+
+/** Califica a la contraparte de un intercambio completado. La RLS valida elegibilidad; el trigger recalcula su score. */
+export const submitRating = async (input: SubmitRatingInput): Promise<ActionResult> => {
+  const parsed = submitRatingSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: "Datos inválidos", code: "VALIDATION_ERROR", details: parsed.error.flatten() };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
+
+  const { requestId, stars, comment } = parsed.data;
+
+  const { data: row } = await supabase
+    .from("exchange_requests")
+    .select("*")
+    .eq("id", requestId)
+    .maybeSingle<ExchangeRequest>();
+  if (!row) return { error: "Solicitud no encontrada", code: "NOT_FOUND" };
+  if (row.status !== "completed") {
+    return { error: "Solo puedes calificar intercambios completados", code: "INVALID_STATE" };
+  }
+
+  const rateeId = row.requester_id === user.id ? row.recipient_id : row.requester_id;
+  if (rateeId === user.id) {
+    return { error: "No eres parte de este intercambio", code: "FORBIDDEN" };
+  }
+
+  const { error: insertError } = await supabase.from("ratings").insert({
+    exchange_request_id: requestId,
+    rater_id: user.id,
+    ratee_id: rateeId,
+    stars,
+    comment: comment || null,
+  });
+  if (insertError) {
+    if (insertError.code === "23505") {
+      return { error: "Ya calificaste este intercambio", code: "DUPLICATE" };
+    }
+    console.error("submitRating insert error:", insertError);
+    return { error: "No pudimos guardar tu calificación", code: "DB_ERROR" };
+  }
+
+  await notify({
+    userId: rateeId,
+    type: "rating_received",
+    title: "Recibiste una calificación",
+    body: `Te dieron ${stars} ${stars === 1 ? "estrella" : "estrellas"}.`,
+    link: "/intercambios",
+  });
 
   revalidatePath("/intercambios");
   return {};
@@ -295,6 +450,23 @@ export const confirmMockPayment = async (
   if (updateError) {
     console.error("confirmMockPayment update error:", updateError);
     return { error: "No pudimos confirmar el pago", code: "DB_ERROR" };
+  }
+
+  const { data: exch } = await supabase
+    .from("exchange_requests")
+    .select("requester_id, recipient_id")
+    .eq("id", payment.exchange_request_id)
+    .maybeSingle<{ requester_id: string; recipient_id: string }>();
+  if (exch) {
+    const other = exch.requester_id === user.id ? exch.recipient_id : exch.requester_id;
+    const who = await actorName(supabase, user.id);
+    await notify({
+      userId: other,
+      type: "commission_paid",
+      title: "Comisión pagada",
+      body: `${who} pagó su comisión. Paga la tuya para concretar el intercambio.`,
+      link: "/intercambios",
+    });
   }
 
   revalidatePath("/intercambios");

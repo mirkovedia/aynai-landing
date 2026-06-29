@@ -25,6 +25,11 @@ export const profileSchema = z.object({
       linkedin: optionalUrl,
       github: optionalUrl,
       x: optionalUrl,
+      whatsapp: z
+        .string()
+        .regex(/^\d{7,15}$/, "Solo dígitos, sin + ni espacios (ej: 59170000000)")
+        .optional()
+        .or(z.literal("")),
     })
     .partial(),
   skills: z.array(skillSchema).max(30),

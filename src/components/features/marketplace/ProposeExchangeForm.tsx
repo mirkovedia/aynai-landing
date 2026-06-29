@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { createExchangeRequest } from "@/app/(dashboard)/intercambios/actions";
 
 interface ProposeExchangeFormProps {
@@ -28,19 +29,18 @@ export const ProposeExchangeForm = ({
   onClose,
 }: ProposeExchangeFormProps) => {
   const router = useRouter();
+  const { toast } = useToast();
   const [offerSkill, setOfferSkill] = useState(myOffers[0] ?? "");
   const [wantSkill, setWantSkill] = useState(recipientOffers[0] ?? "");
   const [message, setMessage] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [sending, setSending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
 
     if (!offerSkill || !wantSkill) {
-      setError("Elige qué ofreces y qué quieres.");
+      toast("Elige qué ofreces y qué quieres.", "error");
       return;
     }
 
@@ -48,13 +48,14 @@ export const ProposeExchangeForm = ({
     try {
       const result = await createExchangeRequest({ recipientId, offerSkill, wantSkill, message });
       if (result.error) {
-        setError(result.error);
+        toast(result.error, "error");
         return;
       }
+      toast(`Propuesta enviada a ${recipientName}.`, "success");
       setDone(true);
       router.refresh();
     } catch {
-      setError("Ocurrió un error inesperado. Intenta de nuevo.");
+      toast("Ocurrió un error inesperado. Intenta de nuevo.", "error");
     } finally {
       setSending(false);
     }
@@ -111,11 +112,9 @@ export const ProposeExchangeForm = ({
         />
       </div>
 
-      {error && <p className="text-sm text-red">{error}</p>}
-
       <div className="flex gap-3">
-        <Button type="submit" size="sm" disabled={sending || myOffers.length === 0 || recipientOffers.length === 0}>
-          {sending ? "Enviando..." : "Enviar propuesta"}
+        <Button type="submit" size="sm" loading={sending} disabled={myOffers.length === 0 || recipientOffers.length === 0}>
+          {sending ? "Enviando…" : "Enviar propuesta"}
         </Button>
         <Button as="button" type="button" variant="ghost" size="sm" onClick={onClose}>
           Cancelar

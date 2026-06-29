@@ -8,6 +8,7 @@ export interface ProfileLinks {
   linkedin?: string;
   github?: string;
   x?: string;
+  whatsapp?: string; // número internacional sin +, ej: 59170000000
 }
 
 /** Fila de la tabla profiles. */
@@ -47,7 +48,7 @@ export interface WaitlistEntry {
 }
 
 /** Estado de una solicitud de intercambio. */
-export type ExchangeStatus = "pending" | "accepted" | "rejected" | "cancelled";
+export type ExchangeStatus = "pending" | "accepted" | "rejected" | "cancelled" | "completed";
 
 /** Fila de la tabla exchange_requests. */
 export interface ExchangeRequest {
@@ -58,6 +59,9 @@ export interface ExchangeRequest {
   want_skill: string;
   message: string | null;
   status: ExchangeStatus;
+  requester_confirmed: boolean;
+  recipient_confirmed: boolean;
+  completed_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -77,4 +81,42 @@ export interface CommissionPayment {
   qr_payload: string | null;
   created_at: string;
   paid_at: string | null;
+}
+
+/** Fila de la tabla ratings. */
+export interface Rating {
+  id: string;
+  exchange_request_id: string;
+  rater_id: string;
+  ratee_id: string;
+  stars: number;
+  comment: string | null;
+  created_at: string;
+}
+
+/** Resumen de reputación de un perfil (calculado en consulta). */
+export interface RatingSummary {
+  average: number;
+  count: number;
+}
+
+/** Tipos de evento que generan una notificación. */
+export type NotificationType =
+  | "request_received"
+  | "request_accepted"
+  | "request_rejected"
+  | "commission_paid"
+  | "exchange_completed"
+  | "rating_received";
+
+/** Fila de la tabla notifications. */
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  body: string | null;
+  link: string | null;
+  read: boolean;
+  created_at: string;
 }

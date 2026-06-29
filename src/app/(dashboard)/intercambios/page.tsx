@@ -2,7 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ExchangeRequestCard, type ExchangeParty } from "@/components/features/marketplace/ExchangeRequestCard";
-import type { ExchangeRequest, CommissionPayment } from "@/types/database";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
+import type { ExchangeRequest, CommissionPayment, Rating } from "@/types/database";
 
 interface PageProps {
   searchParams: Promise<{ tab?: string }>;
@@ -58,6 +60,15 @@ export default async function IntercambiosPage({ searchParams }: PageProps) {
     .returns<CommissionPayment[]>();
   const paymentByExchange = new Map((myPayments ?? []).map((p) => [p.exchange_request_id, p]));
 
+  // Ratings que YO ya emití para los intercambios visibles (gate del formulario).
+  const { data: myRatings } = await supabase
+    .from("ratings")
+    .select("exchange_request_id")
+    .eq("rater_id", user.id)
+    .in("exchange_request_id", rowIds.length > 0 ? rowIds : ["00000000-0000-0000-0000-000000000000"])
+    .returns<Pick<Rating, "exchange_request_id">[]>();
+  const ratedExchangeIds = new Set((myRatings ?? []).map((r) => r.exchange_request_id));
+
   const tabClass = (active: boolean) =>
     `rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
       active ? "bg-cocoa text-cream" : "text-cocoa/70 hover:bg-cocoa/5"
@@ -78,9 +89,29 @@ export default async function IntercambiosPage({ searchParams }: PageProps) {
 
       <div className="mt-8 space-y-4">
         {rows.length === 0 ? (
-          <p className="text-center text-sm text-cocoa/50">
-            {activeTab === "received" ? "Aún no tienes solicitudes recibidas." : "Aún no has enviado solicitudes."}
-          </p>
+          activeTab === "received" ? (
+            <EmptyState
+              icon="📬"
+              title="Aún no tienes solicitudes recibidas"
+              description="Cuando alguien quiera intercambiar contigo, su propuesta aparecerá aquí."
+              action={
+                <Button as="a" href="/marketplace" size="sm">
+                  Explorar el marketplace
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState
+              icon="✉️"
+              title="Aún no has enviado propuestas"
+              description="Encuentra a alguien con quien hacer un Ayni y envía tu primera propuesta de intercambio."
+              action={
+                <Button as="a" href="/marketplace" size="sm">
+                  Buscar personas
+                </Button>
+              }
+            />
+          )
         ) : (
           rows.map((request) => {
             const counterpartId = activeTab === "received" ? request.requester_id : request.recipient_id;
@@ -92,6 +123,7 @@ export default async function IntercambiosPage({ searchParams }: PageProps) {
                 role={activeTab}
                 counterpart={party}
                 myPayment={paymentByExchange.get(request.id) ?? null}
+                alreadyRated={ratedExchangeIds.has(request.id)}
               />
             );
           })

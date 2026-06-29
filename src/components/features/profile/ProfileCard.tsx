@@ -1,5 +1,6 @@
 import { MapPin, Globe, Linkedin, Github } from "lucide-react";
-import type { Profile, UserSkill, Availability } from "@/types/database";
+import { StarRating } from "@/components/ui/star-rating";
+import type { Profile, UserSkill, Availability, RatingSummary } from "@/types/database";
 
 /** Subconjunto público del perfil (nunca incluye email). */
 export type PublicProfile = Omit<Profile, "email">;
@@ -7,6 +8,10 @@ export type PublicProfile = Omit<Profile, "email">;
 export interface ProfileCardProps {
   profile: PublicProfile;
   skills: UserSkill[];
+  ratings?: {
+    summary: RatingSummary;
+    recent: Array<{ stars: number; comment: string | null; created_at: string }>;
+  };
 }
 
 const availabilityLabel: Record<Availability, string> = {
@@ -22,7 +27,7 @@ const availabilityColor: Record<Availability, string> = {
 };
 
 /** Tarjeta de perfil reutilizable: perfil propio, público y (futuro) marketplace. */
-export const ProfileCard = ({ profile, skills }: ProfileCardProps) => {
+export const ProfileCard = ({ profile, skills, ratings }: ProfileCardProps) => {
   const offers = skills.filter((s) => s.kind === "offer");
   const seeks = skills.filter((s) => s.kind === "seek");
   const name = profile.full_name?.trim() || profile.username || "Usuario";
@@ -95,6 +100,24 @@ export const ProfileCard = ({ profile, skills }: ProfileCardProps) => {
             </a>
           )}
         </div>
+      )}
+
+      {ratings && ratings.summary.count > 0 && (
+        <section className="mt-8 border-t border-cream-300 pt-6">
+          <div className="flex items-center gap-2">
+            <StarRating value={Math.round(ratings.summary.average)} readOnly size="sm" />
+            <span className="text-sm font-semibold text-cocoa">{ratings.summary.average.toFixed(1)}</span>
+            <span className="text-sm text-cocoa/50">({ratings.summary.count})</span>
+          </div>
+          <ul className="mt-4 space-y-3">
+            {ratings.recent.map((r, i) => (
+              <li key={i} className="rounded-2xl border border-cream-200 bg-cream/30 p-3">
+                <StarRating value={r.stars} readOnly size="sm" />
+                {r.comment && <p className="mt-1 text-sm text-cocoa/80">“{r.comment}”</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );
