@@ -2,11 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { isAdminEmail } from "@/lib/admin";
 
 const isAdmin = async () => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  return user?.email === process.env.ADMIN_EMAIL;
+  return isAdminEmail(user?.email);
 };
 
 export const adminConfirmPayment = async (paymentId: string) => {

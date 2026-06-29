@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ToastProvider } from "@/components/ui/toast";
 import { NotificationBell } from "@/components/features/notifications/NotificationBell";
+import { isAdminEmail } from "@/lib/admin";
 import { signOut } from "./actions";
 import type { Notification } from "@/types/database";
 
@@ -63,7 +64,7 @@ export default async function DashboardLayout({
                   </span>
                 )}
               </Link>
-              {user?.email === process.env.ADMIN_EMAIL && (
+              {isAdminEmail(user?.email) && (
                 <Link href="/admin" className="text-sm font-bold text-red transition-colors hover:text-red/70">
                   Admin ↗
                 </Link>
