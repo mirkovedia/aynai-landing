@@ -46,10 +46,10 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-6">
             <Link
               href="/dashboard"
-              aria-label="AynAI — Inicio"
+              aria-label="AYNAI — Inicio"
               className="font-serif text-2xl font-bold tracking-tight"
             >
-              <span className="text-cocoa">Ayn</span>
+              <span className="text-cocoa">AYN</span>
               <span className="text-red">AI</span>
             </Link>
             <nav className="hidden items-center gap-5 sm:flex">

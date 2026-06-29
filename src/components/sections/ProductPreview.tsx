@@ -23,9 +23,9 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
 
 /**
- * Sección "AynAI en acción" — un frame de navegador que reproduce solo el
+ * Sección "AYNAI en acción" — un frame de navegador que reproduce solo el
  * flujo real del producto: explorar → proponer → conectar (pagar Bs X) →
- * subir el AynAI Score. Demuestra que la app existe de verdad, con animaciones
+ * subir el AYNAI Score. Demuestra que la app existe de verdad, con animaciones
  * profesionales. Es el ancla #producto.
  */
 
@@ -201,7 +201,7 @@ const ScoreScreen = () => (
       <div className="tricolor-bar h-1 w-full rounded-full" />
       <div className="mt-4 flex items-center justify-between">
         <div>
-          <p className="text-[0.62rem] uppercase tracking-[0.2em] text-cream/50">AynAI Score</p>
+          <p className="text-[0.62rem] uppercase tracking-[0.2em] text-cream/50">AYNAI Score</p>
           <p className="mt-0.5 font-serif text-sm font-bold">Tú · Desarrollo web</p>
         </div>
         <BadgeCheck size={26} aria-hidden="true" className="text-green" />
@@ -268,7 +268,7 @@ export const ProductPreview = () => {
           eyebrow="El producto, en vivo"
           title={
             <>
-              Mira AynAI <span className="text-gradient-gold">en acción</span>
+              Mira AYNAI <span className="text-gradient-gold">en acción</span>
             </>
           }
           description="No es una promesa: es el producto real funcionando. Mira el flujo completo de un Ayni, de explorar a construir reputación."

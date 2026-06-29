@@ -10,10 +10,10 @@ export default function AuthLayout({
       <header className="px-6 py-5">
         <Link
           href="/"
-          aria-label="AynAI — Inicio"
+          aria-label="AYNAI — Inicio"
           className="font-serif text-2xl font-bold tracking-tight"
         >
-          <span className="text-cream">Ayn</span>
+          <span className="text-cream">AYN</span>
           <span className="text-red">AI</span>
         </Link>
       </header>

@@ -5,14 +5,14 @@ interface ScoreWidgetProps {
   storedScore: number;
 }
 
-/** Widget AynAI Score: muestra el score almacenado con su desglose por factores. */
+/** Widget AYNAI Score: muestra el score almacenado con su desglose por factores. */
 export const ScoreWidget = ({ score, storedScore }: ScoreWidgetProps) => {
   const display = storedScore > 0 ? storedScore : score.total;
   const pct = Math.min((display / 1000) * 100, 100);
 
   return (
     <div className="rounded-3xl border border-cream-300 bg-white p-6 shadow-sm">
-      <p className="text-sm font-medium text-cocoa/60">Tu AynAI Score</p>
+      <p className="text-sm font-medium text-cocoa/60">Tu AYNAI Score</p>
       <p className="mt-1 font-serif text-5xl font-bold text-green">{display}</p>
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-cream-200">
         <div

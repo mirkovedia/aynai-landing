@@ -1,4 +1,4 @@
-/** Entrada cruda para calcular el AynAI Score de un usuario. */
+/** Entrada cruda para calcular el AYNAI Score de un usuario. */
 export interface ScoreInput {
   /** Promedio de estrellas recibidas (null si no tiene ratings). */
   avgStars: number | null;
@@ -26,7 +26,7 @@ export interface ScoreResult {
 const VOLUME_CAP = 20;
 
 /**
- * Calcula el AynAI Score (0–1000) con desglose por factor.
+ * Calcula el AYNAI Score (0–1000) con desglose por factor.
  * Arranque neutro: sin ratings NI intercambios completados → 600.
  * Espejo de la función SQL recalc_ayni_score (deben mantenerse en sincronía).
  */

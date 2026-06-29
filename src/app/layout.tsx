@@ -20,29 +20,29 @@ const hanken = Hanken_Grotesk({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://aynai.example"),
-  title: "AynAI — Tu talento vale. Demuéstralo.",
+  title: "AYNAI — Tu talento vale. Demuéstralo.",
   description:
-    "AynAI es el marketplace donde intercambias habilidades y construyes una reputación verificable que nadie puede falsificar. Comisión justa, sin bancos, reputación on-chain.",
+    "AYNAI es el marketplace donde intercambias habilidades y construyes una reputación verificable que nadie puede falsificar. Comisión justa, sin bancos, reputación on-chain.",
   keywords: [
     "marketplace de habilidades",
     "reputación verificable",
     "freelance Bolivia",
-    "AynAI Score",
+    "AYNAI Score",
     "economía del talento",
     "trueque de habilidades",
   ],
-  authors: [{ name: "Equipo AynAI" }],
+  authors: [{ name: "Equipo AYNAI" }],
   openGraph: {
-    title: "AynAI — Tu talento vale. Demuéstralo.",
+    title: "AYNAI — Tu talento vale. Demuéstralo.",
     description:
-      "El marketplace donde tu reputación es tuya de verdad. Intercambia habilidades y construye un AynAI Score verificable.",
+      "El marketplace donde tu reputación es tuya de verdad. Intercambia habilidades y construye un AYNAI Score verificable.",
     type: "website",
     locale: "es_BO",
-    siteName: "AynAI",
+    siteName: "AYNAI",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AynAI — Tu talento vale. Demuéstralo.",
+    title: "AYNAI — Tu talento vale. Demuéstralo.",
     description: "El marketplace de habilidades con reputación verificable on-chain.",
   },
 };

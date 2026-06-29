@@ -10,10 +10,10 @@ import { cn } from "@/lib/utils";
 const Logo = ({ light = false }: { light?: boolean }) => (
   <a
     href="#inicio"
-    aria-label="AynAI — Inicio"
+    aria-label="AYNAI — Inicio"
     className="font-serif text-2xl font-bold tracking-tight"
   >
-    <span className={light ? "text-cream" : "text-cocoa"}>Ayn</span>
+    <span className={light ? "text-cream" : "text-cocoa"}>AYN</span>
     <span className="text-red">AI</span>
   </a>
 );

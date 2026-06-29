@@ -52,7 +52,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
       <header className="border-b border-cream-300 bg-cream/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-3xl items-center px-5 sm:px-8">
           <Link href="/dashboard" className="font-serif text-2xl font-bold tracking-tight">
-            <span className="text-cocoa">Ayn</span>
+            <span className="text-cocoa">AYN</span>
             <span className="text-red">AI</span>
           </Link>
         </div>

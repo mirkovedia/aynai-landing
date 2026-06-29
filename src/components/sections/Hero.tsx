@@ -61,7 +61,7 @@ export const Hero = () => (
           variants={item}
           className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-cream/75 sm:text-xl"
         >
-          AynAI es el marketplace donde intercambias habilidades y construyes una
+          AYNAI es el marketplace donde intercambias habilidades y construyes una
           reputación verificable. Explora gratis y conecta con quien necesitas.
         </motion.p>
 

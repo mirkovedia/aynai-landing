@@ -32,7 +32,7 @@ const DEFAULT_ACCENT = {
 };
 
 /**
- * Sección Modelo de Negocio — Business Model Canvas de AynAI en grid 3×3.
+ * Sección Modelo de Negocio — Business Model Canvas de AYNAI en grid 3×3.
  * Es el ancla #modelo-de-negocio de la navegación. Resalta los bloques
  * Propuesta de Valor, Ingresos y Costos con los colores andinos.
  */
@@ -46,7 +46,7 @@ export const BusinessModel = () => (
         eyebrow="Modelo de Negocio"
         title={
           <>
-            El <span className="text-gradient-gold">Business Model Canvas</span> de AynAI
+            El <span className="text-gradient-gold">Business Model Canvas</span> de AYNAI
           </>
         }
         description="Cómo creamos, entregamos y capturamos valor: nueve bloques que sostienen un marketplace inclusivo y rentable."

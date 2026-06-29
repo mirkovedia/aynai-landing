@@ -10,7 +10,7 @@ const BENEFITS = [
 ];
 
 /**
- * Sección destacada AynAI Score — fondo cocoa con una tarjeta tipo
+ * Sección destacada AYNAI Score — fondo cocoa con una tarjeta tipo
  * "credencial" que simula el score del usuario. Es el CV alternativo
  * verificable, el corazón de la propuesta.
  */
@@ -26,13 +26,13 @@ export const AynaiScore = () => (
         <SectionHeading
           tone="light"
           align="left"
-          eyebrow="AynAI Score"
+          eyebrow="AYNAI Score"
           title={
             <>
               Tu reputación, convertida en <span className="text-gradient-gold">CV verificable</span>
             </>
           }
-          description="El AynAI Score es un currículum alternativo que vive en la blockchain. Es tuyo para siempre y puedes presentarlo —incluso venderlo— a empresas como prueba de tu trayectoria."
+          description="El AYNAI Score es un currículum alternativo que vive en la blockchain. Es tuyo para siempre y puedes presentarlo —incluso venderlo— a empresas como prueba de tu trayectoria."
         />
 
         <ul className="mt-8 space-y-4">
@@ -61,7 +61,7 @@ export const AynaiScore = () => (
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-cream/50">AynAI Score</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-cream/50">AYNAI Score</p>
                 <p className="mt-1 font-serif text-lg font-bold text-cream">Mara Quispe</p>
               </div>
               <BadgeCheck className="text-green" size={32} />

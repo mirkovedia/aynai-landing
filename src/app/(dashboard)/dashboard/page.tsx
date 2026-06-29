@@ -81,7 +81,7 @@ export default async function DashboardPage() {
     ) ?? "Usuario",
   }));
 
-  // AynAI Score
+  // AYNAI Score
   const { data: ratingAgg } = await supabase
     .from("ratings")
     .select("stars")
@@ -131,7 +131,7 @@ export default async function DashboardPage() {
       {profileItems < 5 && (
         <div className="mb-8 flex items-center justify-between gap-4 rounded-3xl border border-gold/40 bg-gold/10 p-5">
           <p className="text-sm font-medium text-cocoa">
-            Completá tu perfil ({profileItems}/5) para subir tu AynAI Score y aparecer en más matches.
+            Completá tu perfil ({profileItems}/5) para subir tu AYNAI Score y aparecer en más matches.
           </p>
           <a
             href="/perfil/editar"

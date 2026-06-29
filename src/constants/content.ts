@@ -1,5 +1,5 @@
 /**
- * Contenido centralizado de la landing de AynAI.
+ * Contenido centralizado de la landing de AYNAI.
  * Mantener los textos aquí facilita su edición sin tocar los componentes.
  */
 
@@ -84,7 +84,7 @@ export const STEPS: StepItem[] = [
     number: "03",
     icon: Award,
     title: "Acepta y construye reputación",
-    description: "Si la otra parte acepta, se concreta la conexión y cada trabajo suma a tu AynAI Score.",
+    description: "Si la otra parte acepta, se concreta la conexión y cada trabajo suma a tu AYNAI Score.",
   },
   {
     number: "04",
@@ -127,7 +127,7 @@ export const AUDIENCES: AudienceItem[] = [
 /** Sección 5 — Comparativa de comisiones */
 export const COMPARISON = {
   aynai: {
-    name: "AynAI",
+    name: "AYNAI",
     fee: `Bs ${COMMISSION_AMOUNT_BS} fijo`,
     points: [
       { label: "Matching con IA", value: true },
@@ -163,7 +163,7 @@ export const BMC_DATA: BmcBlock[] = [
     id: "socios",
     title: "Socios Clave",
     icon: Handshake,
-    description: "Alianzas estratégicas para fortalecer el ecosistema de AynAI, reducir costos de transacción y potenciar el alcance.",
+    description: "Alianzas estratégicas para fortalecer el ecosistema de AYNAI, reducir costos de transacción y potenciar el alcance.",
     items: [
       "Proveedores de infraestructura Web3 (Blockchains Layer 2 de bajo costo)",
       "Universidades e institutos técnicos de Bolivia (semillero de talento joven)",
@@ -187,10 +187,10 @@ export const BMC_DATA: BmcBlock[] = [
     id: "recursos",
     title: "Recursos Clave",
     icon: Wrench,
-    description: "Activos tecnológicos, humanos e intelectuales fundamentales para sostener y operar el modelo AynAI.",
+    description: "Activos tecnológicos, humanos e intelectuales fundamentales para sostener y operar el modelo AYNAI.",
     items: [
       "Algoritmo propietario de Matching IA para la conexión de habilidades",
-      "Contrato inteligente y base de datos descentralizada del AynAI Score",
+      "Contrato inteligente y base de datos descentralizada del AYNAI Score",
       "Equipo de desarrollo tecnológico, soporte y moderadores",
       "Ecosistema de usuarios activos y comunidad de validación"
     ]
@@ -201,7 +201,7 @@ export const BMC_DATA: BmcBlock[] = [
     icon: Award,
     description: "Qué nos hace únicos: reputación inalterable, comisiones ultra bajas, inclusión para los no bancarizados y trueque.",
     items: [
-      "AynAI Score: Reputación portable, inalterable y de tu propiedad (on-chain)",
+      "AYNAI Score: Reputación portable, inalterable y de tu propiedad (on-chain)",
       "Conexión instantánea y eficiente mediante inteligencia artificial",
       `Tarifa plana y baja: Bs ${COMMISSION_AMOUNT_BS} por conexión, no un porcentaje de tus ingresos`,
       "Inclusión total: Opera con o sin cuenta bancaria (criptomonedas/trueques)"
@@ -225,7 +225,7 @@ export const BMC_DATA: BmcBlock[] = [
     icon: Compass,
     description: "Los medios a través de los cuales entregamos nuestra propuesta de valor y nos comunicamos con los segmentos.",
     items: [
-      "Aplicación web y móvil oficial de AynAI",
+      "Aplicación web y móvil oficial de AYNAI",
       "Redes sociales y comunidades de freelancers en línea",
       "Campus universitarios y eventos tecnológicos locales en Bolivia",
       "Mecanismo de referidos de boca en boca dentro de comunidades locales"
@@ -247,7 +247,7 @@ export const BMC_DATA: BmcBlock[] = [
     id: "costos",
     title: "Estructura de Costos",
     icon: Coins,
-    description: "Los egresos financieros necesarios para mantener en marcha la infraestructura, desarrollo y adquisición de AynAI.",
+    description: "Los egresos financieros necesarios para mantener en marcha la infraestructura, desarrollo y adquisición de AYNAI.",
     items: [
       "Infraestructura tecnológica en la nube (hosting, APIs, IA y bases de datos)",
       "Salarios del equipo de desarrollo, diseño y soporte al cliente",
@@ -259,11 +259,11 @@ export const BMC_DATA: BmcBlock[] = [
     id: "ingresos",
     title: "Fuentes de Ingreso",
     icon: TrendingUp,
-    description: "Los flujos monetarios que garantizan la sostenibilidad económica a largo plazo de AynAI.",
+    description: "Los flujos monetarios que garantizan la sostenibilidad económica a largo plazo de AYNAI.",
     items: [
       `Tarifa plana de Bs ${COMMISSION_AMOUNT_BS} por persona en cada conexión concretada`,
       "Suscripción premium para empresas (herramientas de búsqueda y filtrado avanzado)",
-      "Tarifa por verificación oficial y emisión física/portable del AynAI Score",
+      "Tarifa por verificación oficial y emisión física/portable del AYNAI Score",
       "Intereses generados por depósitos en garantía (escrow) en stablecoins"
     ]
   }

@@ -42,7 +42,7 @@ type Props = ButtonProps | LinkProps;
 
 /**
  * Botón polimórfico (botón o enlace) en estilo shadcn/ui con
- * variantes de la marca AynAI. `as="a"` lo convierte en ancla.
+ * variantes de la marca AYNAI. `as="a"` lo convierte en ancla.
  */
 export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, Props>(
   ({ variant = "primary", size = "md", className, as = "button", loading = false, children, ...rest }, ref) => {

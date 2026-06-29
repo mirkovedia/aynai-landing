@@ -173,7 +173,7 @@ export default async function AdminPage() {
                 <th className="px-4 py-3 text-left">Nombre</th>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Username</th>
-                <th className="px-4 py-3 text-left">AynAI Score</th>
+                <th className="px-4 py-3 text-left">AYNAI Score</th>
                 <th className="px-4 py-3 text-left">Disponibilidad</th>
                 <th className="px-4 py-3 text-left">Registrado</th>
               </tr>

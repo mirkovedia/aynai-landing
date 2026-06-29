@@ -60,7 +60,7 @@ export const AuthForm = ({ mode }: { mode: Mode }) => {
       <p className="mt-2 text-sm text-cream/60">
         {isRegister
           ? "Empieza a construir tu reputación verificable."
-          : "Bienvenido de vuelta a AynAI."}
+          : "Bienvenido de vuelta a AYNAI."}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">

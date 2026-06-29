@@ -10,7 +10,7 @@ import { COMMISSION_AMOUNT_BS } from "@/lib/payments/constants";
 
 const FAQS = [
   {
-    q: "¿Es gratis unirse a AynAI?",
+    q: "¿Es gratis unirse a AYNAI?",
     a: "Sí. Crear tu perfil, explorar el marketplace y proponer todos los Aynis que quieras es completamente gratis. Solo pagas cuando ambas partes deciden concretar una conexión.",
   },
   {
@@ -23,18 +23,18 @@ const FAQS = [
   },
   {
     q: "¿Cómo sé que la otra persona cumplirá?",
-    a: "El AynAI Score es el mecanismo de confianza: cada vez que alguien no cumple o recibe malas valoraciones, su score baja. Eso desincentiva el incumplimiento. Además, solo se revela el contacto después del pago, por lo que ambas partes tienen piel en el juego.",
+    a: "El AYNAI Score es el mecanismo de confianza: cada vez que alguien no cumple o recibe malas valoraciones, su score baja. Eso desincentiva el incumplimiento. Además, solo se revela el contacto después del pago, por lo que ambas partes tienen piel en el juego.",
   },
   {
     q: "¿Cuándo me dan el contacto de la otra persona?",
     a: `Inmediatamente después de que ambas partes aceptan el Ayni y se procesa el pago de Bs ${COMMISSION_AMOUNT_BS}. En ese momento se revela el número de WhatsApp para que coordinen directamente.`,
   },
   {
-    q: "¿Qué es el AynAI Score y para qué sirve?",
-    a: "El AynAI Score es tu reputación verificable: una puntuación de 0 a 1000 que crece con cada intercambio completado y valoración recibida. Está anclada on-chain, por lo que nadie puede falsificarla ni quitártela. Puedes presentarla a empresas como prueba real de tu trayectoria.",
+    q: "¿Qué es el AYNAI Score y para qué sirve?",
+    a: "El AYNAI Score es tu reputación verificable: una puntuación de 0 a 1000 que crece con cada intercambio completado y valoración recibida. Está anclada on-chain, por lo que nadie puede falsificarla ni quitártela. Puedes presentarla a empresas como prueba real de tu trayectoria.",
   },
   {
-    q: "¿AynAI solo funciona en Bolivia?",
+    q: "¿AYNAI solo funciona en Bolivia?",
     a: "Estamos enfocados inicialmente en Bolivia, pero cualquier persona de habla hispana puede crear su cuenta y participar. El pago actualmente es en bolivianos (Bs); estamos explorando opciones de pago regionales.",
   },
   {
@@ -82,7 +82,7 @@ const FaqRow = ({ item, isOpen, onToggle }: { item: FaqItem; isOpen: boolean; on
 
 /**
  * Sección FAQ — acordeón animado con las preguntas más frecuentes.
- * Aclara el modelo de comisión, la seguridad y el AynAI Score.
+ * Aclara el modelo de comisión, la seguridad y el AYNAI Score.
  */
 export const Faq = () => {
   const [open, setOpen] = useState<number | null>(0);
@@ -100,7 +100,7 @@ export const Faq = () => {
               <span className="text-gradient-gold">saber antes de entrar</span>
             </>
           }
-          description="Respondemos las dudas más comunes sobre cómo funciona AynAI, la comisión y tu privacidad."
+          description="Respondemos las dudas más comunes sobre cómo funciona AYNAI, la comisión y tu privacidad."
         />
 
         <div className="mt-14 grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:gap-16">

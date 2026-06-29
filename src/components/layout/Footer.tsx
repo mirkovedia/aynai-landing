@@ -22,7 +22,7 @@ export const Footer = () => (
         {/* Marca */}
         <div>
           <span className="font-serif text-2xl font-bold">
-            <span className="text-cream">Ayn</span>
+            <span className="text-cream">AYN</span>
             <span className="text-red">AI</span>
           </span>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-cream/60">
@@ -75,7 +75,7 @@ export const Footer = () => (
 
       {/* Línea inferior */}
       <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-cream/10 pt-8 text-sm text-cream/50 sm:flex-row">
-        <p>© {new Date().getFullYear()} AynAI. Proyecto universitario.</p>
+        <p>© {new Date().getFullYear()} AYNAI. Proyecto universitario.</p>
         <p className="flex items-center gap-1.5">
           Hecho con orgullo en Bolivia
           <span aria-hidden="true">🇧🇴</span>

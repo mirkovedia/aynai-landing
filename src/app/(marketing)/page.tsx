@@ -8,7 +8,7 @@ import { BusinessModel } from "@/components/sections/BusinessModel";
 import { Faq } from "@/components/sections/Faq";
 import { FinalCta } from "@/components/sections/FinalCta";
 
-/** Landing pública de AynAI. Navbar y Footer viven en el layout de (marketing). */
+/** Landing pública de AYNAI. Navbar y Footer viven en el layout de (marketing). */
 export default function Home() {
   return (
     <main id="contenido">

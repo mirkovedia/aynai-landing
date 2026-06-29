@@ -68,7 +68,7 @@ export const ProfileCard = ({ profile, skills, ratings }: ProfileCardProps) => {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs font-medium text-cocoa/50">AynAI Score</p>
+          <p className="text-xs font-medium text-cocoa/50">AYNAI Score</p>
           <p className="font-serif text-3xl font-bold text-green">{profile.ayni_score}</p>
         </div>
       </div>

@@ -15,9 +15,9 @@ export const buildNotificationEmail = (
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
       <h1 style="color:#3d2b1f;font-size:20px">${title}</h1>
       ${body ? `<p style="color:#5c4a3a;font-size:15px;line-height:1.5">${body}</p>` : ""}
-      <a href="${url}" style="display:inline-block;margin-top:16px;background:#3d2b1f;color:#f5efe6;padding:10px 20px;border-radius:9999px;text-decoration:none;font-weight:600">Ver en AynAI</a>
+      <a href="${url}" style="display:inline-block;margin-top:16px;background:#3d2b1f;color:#f5efe6;padding:10px 20px;border-radius:9999px;text-decoration:none;font-weight:600">Ver en AYNAI</a>
     </div>`;
-  return { subject: `AynAI · ${title}`, html };
+  return { subject: `AYNAI · ${title}`, html };
 };
 
 /** Envía el email best-effort. Sin RESEND_API_KEY, no-op silencioso. Nunca lanza. */
@@ -34,7 +34,7 @@ export const sendNotificationEmail = async (
     const resend = new Resend(apiKey);
     const { subject, html } = buildNotificationEmail(type, title, body, link);
     await resend.emails.send({
-      from: process.env.RESEND_FROM ?? "AynAI <onboarding@resend.dev>",
+      from: process.env.RESEND_FROM ?? "AYNAI <onboarding@resend.dev>",
       to,
       subject,
       html,
