@@ -8,6 +8,7 @@ export interface ProfileLinks {
   linkedin?: string;
   github?: string;
   x?: string;
+  whatsapp?: string; // número internacional sin +, ej: 59170000000
 }
 
 /** Fila de la tabla profiles. */
