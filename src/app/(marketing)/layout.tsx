@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { MobileCta } from "@/components/layout/MobileCta";
 
 /** Shell de la zona pública (landing): navbar fija + footer. */
 export default function MarketingLayout({
@@ -16,6 +17,7 @@ export default function MarketingLayout({
       <Navbar />
       {children}
       <Footer />
+      <MobileCta />
     </>
   );
 }

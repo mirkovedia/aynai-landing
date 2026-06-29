@@ -63,6 +63,11 @@ export default async function DashboardLayout({
                   </span>
                 )}
               </Link>
+              {user?.email === process.env.ADMIN_EMAIL && (
+                <Link href="/admin" className="text-sm font-bold text-red transition-colors hover:text-red/70">
+                  Admin ↗
+                </Link>
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-2">
