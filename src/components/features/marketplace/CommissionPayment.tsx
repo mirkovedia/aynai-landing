@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -12,11 +13,10 @@ interface CommissionPaymentProps {
   amountBs: number;
 }
 
-/** Flujo de pago de la comisión: genera un QR simulado y permite confirmarlo (mock). */
+/** Flujo de pago de la comisión: muestra QR de Yape y permite confirmar el pago. */
 export const CommissionPayment = ({ exchangeRequestId, counterpartName, amountBs }: CommissionPaymentProps) => {
   const router = useRouter();
   const { toast } = useToast();
-  const [qrPayload, setQrPayload] = useState<string | null>(null);
   const [chargeId, setChargeId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -28,7 +28,6 @@ export const CommissionPayment = ({ exchangeRequestId, counterpartName, amountBs
         toast(result.error, "error");
         return;
       }
-      setQrPayload(result.qrPayload ?? null);
       setChargeId(result.chargeId ?? null);
     } catch {
       toast("Ocurrió un error inesperado. Intenta de nuevo.", "error");
@@ -61,18 +60,28 @@ export const CommissionPayment = ({ exchangeRequestId, counterpartName, amountBs
         Paga tu comisión (Bs {amountBs}) para ver el contacto de {counterpartName}.
       </p>
 
-      {!qrPayload ? (
+      {!chargeId ? (
         <Button as="button" type="button" size="sm" className="mt-3" loading={busy} onClick={handleStart}>
-          {busy ? "Generando…" : `Pagar comisión (Bs ${amountBs})`}
+          {busy ? "Generando…" : `Pagar Bs ${amountBs} por Yape`}
         </Button>
       ) : (
         <div className="mt-3 space-y-3">
           <div>
-            <p className="text-xs text-cocoa/60">Escanea este QR (simulado) para pagar:</p>
-            <pre className="mt-1 overflow-x-auto rounded-xl border border-cream-300 bg-white px-3 py-3 text-xs text-cocoa">{qrPayload}</pre>
+            <p className="text-xs text-cocoa/60 mb-2">
+              Escanea con Yape y paga <span className="font-semibold text-cocoa">Bs {amountBs}</span>:
+            </p>
+            <div className="flex justify-center">
+              <Image
+                src="/qr-yape.jpeg"
+                alt="QR Yape para pagar la comisión"
+                width={200}
+                height={200}
+                className="rounded-xl"
+              />
+            </div>
           </div>
           <Button as="button" type="button" size="sm" loading={busy} onClick={handleConfirm}>
-            {busy ? "Confirmando…" : "Ya pagué (simular)"}
+            {busy ? "Confirmando…" : "Ya pagué"}
           </Button>
         </div>
       )}
