@@ -121,7 +121,18 @@ export const ExchangeRequestCard = ({ request, role, counterpart, myPayment, alr
             <p className="flex items-center gap-1.5 font-semibold text-cocoa">
               <span aria-hidden="true">🎉</span> Contacto de {name}:
             </p>
-            {hasLinks ? (
+
+            {counterpart.links?.whatsapp ? (
+              <a
+                href={`https://wa.me/${counterpart.links.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 flex items-center gap-2.5 rounded-xl bg-green px-4 py-2.5 font-semibold text-white transition-opacity hover:opacity-90 w-fit"
+              >
+                <span aria-hidden="true" className="text-base">💬</span>
+                Abrir WhatsApp
+              </a>
+            ) : hasLinks ? (
               <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-cocoa/80">
                 {counterpart.links?.web && <li><a className="hover:underline" href={counterpart.links.web} target="_blank" rel="noopener noreferrer">Web</a></li>}
                 {counterpart.links?.linkedin && <li><a className="hover:underline" href={counterpart.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></li>}
@@ -131,8 +142,8 @@ export const ExchangeRequestCard = ({ request, role, counterpart, myPayment, alr
             ) : (
               <p className="mt-1 text-cocoa/60">
                 {counterpart.username
-                  ? <>Visita su perfil: <a className="font-semibold text-red hover:underline" href={`/u/${counterpart.username}`}>@{counterpart.username}</a></>
-                  : "Esta persona aún no agregó enlaces de contacto."}
+                  ? <>Perfil público: <a className="font-semibold text-red hover:underline" href={`/u/${counterpart.username}`}>@{counterpart.username}</a></>
+                  : "Esta persona aún no agregó contacto. Escríbele por su perfil."}
               </p>
             )}
           </motion.div>
