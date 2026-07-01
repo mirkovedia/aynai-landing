@@ -41,37 +41,39 @@ export const ProfileCard = ({ profile, skills, ratings, portfolio }: ProfileCard
 
   return (
     <div className="rounded-3xl border border-cream-300 bg-white p-6 shadow-sm sm:p-8">
-      <div className="flex items-start gap-5">
-        <Image
-          src={profile.avatar_url || "/icon.svg"}
-          alt={name}
-          width={80}
-          height={80}
-          className="h-20 w-20 rounded-2xl border border-cream-300 object-cover"
-          unoptimized={!profile.avatar_url}
-        />
-        <div className="min-w-0 flex-1">
-          <h1 className="font-serif text-3xl font-bold text-cocoa">{name}</h1>
-          {profile.username && (
-            <p className="text-sm text-cocoa/50">@{profile.username}</p>
-          )}
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-cocoa/60">
-            {profile.location && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin size={14} /> {profile.location}
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-5">
+        <div className="flex items-start gap-4 sm:gap-5">
+          <Image
+            src={profile.avatar_url || "/icon.svg"}
+            alt={name}
+            width={80}
+            height={80}
+            className="h-20 w-20 rounded-2xl border border-cream-300 object-cover shrink-0"
+            unoptimized={!profile.avatar_url}
+          />
+          <div className="min-w-0">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-cocoa leading-tight">{name}</h1>
+            {profile.username && (
+              <p className="text-sm text-cocoa/50">@{profile.username}</p>
+            )}
+            <div className="mt-2 flex flex-wrap items-center gap-2.5 text-sm text-cocoa/60">
+              {profile.location && (
+                <span className="inline-flex items-center gap-1">
+                  <MapPin size={14} /> {profile.location}
+                </span>
+              )}
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-medium ${availabilityColor[availability]}`}
+              >
+                {availabilityLabel[availability]}
               </span>
-            )}
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-medium ${availabilityColor[availability]}`}
-            >
-              {availabilityLabel[availability]}
-            </span>
-            {profile.modality && (
-              <span className="text-xs text-cocoa/50">{profile.modality}</span>
-            )}
+              {profile.modality && (
+                <span className="text-xs text-cocoa/50">{profile.modality}</span>
+              )}
+            </div>
           </div>
         </div>
-        <div className="text-right">
+        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto border-t sm:border-t-0 border-cream-200 pt-3 sm:pt-0 shrink-0">
           <p className="text-xs font-medium text-cocoa/50">AYNAI Score</p>
           <p className="font-serif text-3xl font-bold text-green">{profile.ayni_score}</p>
         </div>

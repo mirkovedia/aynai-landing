@@ -78,8 +78,8 @@ export default async function PublicProfilePage({ params }: PageProps) {
       </header>
       <div className="mx-auto max-w-3xl px-5 py-12 sm:px-8">
         {!isOwnProfile && currentUser && (
-          <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-cream-300 bg-white px-5 py-4 shadow-sm">
-            <p className="text-sm text-cocoa/70">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-cream-300 bg-white px-5 py-4 shadow-sm">
+            <p className="text-sm text-cocoa/70 text-center sm:text-left">
               {completedCount ? (
                 <><span className="font-semibold text-cocoa">{completedCount}</span> intercambio{completedCount !== 1 ? "s" : ""} completado{completedCount !== 1 ? "s" : ""}</>
               ) : (
@@ -88,7 +88,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
             </p>
             <Link
               href={`/marketplace?propose=${profile.username}`}
-              className="rounded-full bg-cocoa px-4 py-2 text-sm font-semibold text-cream transition-colors hover:bg-cocoa/90"
+              className="rounded-full bg-cocoa px-4 py-2 text-sm font-semibold text-cream transition-colors hover:bg-cocoa/90 text-center w-full sm:w-auto"
             >
               Proponer intercambio
             </Link>
