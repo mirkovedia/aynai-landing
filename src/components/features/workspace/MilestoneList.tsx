@@ -24,7 +24,8 @@ export const MilestoneList = ({ exchangeId, currentUserId, milestones, onOptimis
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   const handleToggle = (milestone: Milestone) => {
-    // Actualización optimista
+    // Capturar snapshot antes de la actualización optimista
+    const snapshot = milestones;
     onOptimisticUpdate(
       milestones.map((m) =>
         m.id === milestone.id
@@ -35,8 +36,8 @@ export const MilestoneList = ({ exchangeId, currentUserId, milestones, onOptimis
     startTransition(async () => {
       const result = await toggleMilestone({ milestoneId: milestone.id, exchangeId });
       if (result.error) {
-        // Revertir
-        onOptimisticUpdate(milestones);
+        // Revertir al snapshot capturado antes de la actualización optimista
+        onOptimisticUpdate(snapshot);
         toast(result.error, "error");
       }
     });
@@ -44,6 +45,8 @@ export const MilestoneList = ({ exchangeId, currentUserId, milestones, onOptimis
 
   const handleAdd = () => {
     if (!newTitle.trim()) return;
+    // Capturar snapshot antes de la actualización optimista
+    const snapshot = milestones;
     const tempId = `opt-${Date.now()}`;
     const optimistic: Milestone = {
       id: tempId,
@@ -63,18 +66,22 @@ export const MilestoneList = ({ exchangeId, currentUserId, milestones, onOptimis
     startTransition(async () => {
       const result = await addMilestone({ exchangeId, title: titleToSend });
       if (result.error) {
-        onOptimisticUpdate(milestones);
+        // Revertir al snapshot capturado antes de la actualización optimista
+        onOptimisticUpdate(snapshot);
         toast(result.error, "error");
       }
     });
   };
 
   const handleDelete = (milestone: Milestone) => {
+    // Capturar snapshot antes de la actualización optimista
+    const snapshot = milestones;
     onOptimisticUpdate(milestones.filter((m) => m.id !== milestone.id));
     startTransition(async () => {
       const result = await deleteMilestone({ milestoneId: milestone.id, exchangeId });
       if (result.error) {
-        onOptimisticUpdate(milestones);
+        // Revertir al snapshot capturado antes de la actualización optimista
+        onOptimisticUpdate(snapshot);
         toast(result.error, "error");
       }
     });

@@ -112,7 +112,6 @@ export const WorkspacePanel = ({
           exchangeId={exchangeId}
           initialContent={initialNote?.content ?? ""}
           externalContent={noteContent}
-          onExternalUpdate={setNoteContent}
         />
       </section>
     </div>

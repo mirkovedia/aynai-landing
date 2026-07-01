@@ -6,12 +6,11 @@ import { saveNote } from "@/app/(dashboard)/intercambios/[id]/actions";
 interface Props {
   exchangeId: string;
   initialContent: string;
-  onExternalUpdate: (content: string) => void;
   externalContent: string;
 }
 
 /** Textarea colaborativa con auto-save debounced de 1.5 s y sincronización Realtime. */
-export const Notepad = ({ exchangeId, initialContent, onExternalUpdate: _, externalContent }: Props) => {
+export const Notepad = ({ exchangeId, initialContent, externalContent }: Props) => {
   const [content, setContent] = useState(initialContent);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
