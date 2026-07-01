@@ -104,6 +104,9 @@ export async function toggleMilestone({
   const idResult = validateExchangeId(exchangeId);
   if (!idResult.ok) return { error: idResult.error };
 
+  const midResult = validateExchangeId(milestoneId);
+  if (!midResult.ok) return { error: "ID de hito inválido." };
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "No autenticado." };
@@ -142,6 +145,9 @@ export async function deleteMilestone({
 }): Promise<{ error?: string }> {
   const idResult = validateExchangeId(exchangeId);
   if (!idResult.ok) return { error: idResult.error };
+
+  const midResult = validateExchangeId(milestoneId);
+  if (!midResult.ok) return { error: "ID de hito inválido." };
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
