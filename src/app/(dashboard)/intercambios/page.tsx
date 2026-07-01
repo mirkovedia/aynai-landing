@@ -21,52 +21,55 @@ export default async function IntercambiosPage({ searchParams }: PageProps) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: received } = await supabase
-    .from("exchange_requests")
-    .select("*")
-    .eq("recipient_id", user.id)
-    .order("created_at", { ascending: false })
-    .returns<ExchangeRequest[]>();
+  const EXCHANGE_COLS = "id, requester_id, recipient_id, offer_skill, want_skill, message, status, requester_confirmed, recipient_confirmed, completed_at, created_at, updated_at";
 
-  const { data: sent } = await supabase
-    .from("exchange_requests")
-    .select("*")
-    .eq("requester_id", user.id)
-    .order("created_at", { ascending: false })
-    .returns<ExchangeRequest[]>();
+  const [{ data: received }, { data: sent }] = await Promise.all([
+    supabase
+      .from("exchange_requests")
+      .select(EXCHANGE_COLS)
+      .eq("recipient_id", user.id)
+      .order("created_at", { ascending: false })
+      .returns<ExchangeRequest[]>(),
+    supabase
+      .from("exchange_requests")
+      .select(EXCHANGE_COLS)
+      .eq("requester_id", user.id)
+      .order("created_at", { ascending: false })
+      .returns<ExchangeRequest[]>(),
+  ]);
 
   const receivedList = received ?? [];
   const sentList = sent ?? [];
   const rows = activeTab === "received" ? receivedList : sentList;
 
-  // Cargar la contraparte de cada fila (nombre + username + links para revelar al aceptar).
   const counterpartIds = [
     ...new Set(rows.map((r) => (activeTab === "received" ? r.requester_id : r.recipient_id))),
   ];
-  const { data: parties } = await supabase
-    .from("profiles")
-    .select("id, full_name, username, links")
-    .in("id", counterpartIds.length > 0 ? counterpartIds : ["00000000-0000-0000-0000-000000000000"])
-    .returns<(ExchangeParty & { id: string })[]>();
-  const partyById = new Map((parties ?? []).map((p) => [p.id, p]));
-
-  // Mis pagos de comisión para los intercambios visibles (para el gate de revelado).
   const rowIds = rows.map((r) => r.id);
-  const { data: myPayments } = await supabase
-    .from("commission_payments")
-    .select("*")
-    .eq("payer_id", user.id)
-    .in("exchange_request_id", rowIds.length > 0 ? rowIds : ["00000000-0000-0000-0000-000000000000"])
-    .returns<CommissionPayment[]>();
-  const paymentByExchange = new Map((myPayments ?? []).map((p) => [p.exchange_request_id, p]));
+  const EMPTY_ID = "00000000-0000-0000-0000-000000000000";
 
-  // Ratings que YO ya emití para los intercambios visibles (gate del formulario).
-  const { data: myRatings } = await supabase
-    .from("ratings")
-    .select("exchange_request_id")
-    .eq("rater_id", user.id)
-    .in("exchange_request_id", rowIds.length > 0 ? rowIds : ["00000000-0000-0000-0000-000000000000"])
-    .returns<Pick<Rating, "exchange_request_id">[]>();
+  const [{ data: parties }, { data: myPayments }, { data: myRatings }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, full_name, username, links")
+      .in("id", counterpartIds.length > 0 ? counterpartIds : [EMPTY_ID])
+      .returns<(ExchangeParty & { id: string })[]>(),
+    supabase
+      .from("commission_payments")
+      .select("id, exchange_request_id, payer_id, amount_bs, status, provider, provider_ref, qr_payload, created_at, paid_at")
+      .eq("payer_id", user.id)
+      .in("exchange_request_id", rowIds.length > 0 ? rowIds : [EMPTY_ID])
+      .returns<CommissionPayment[]>(),
+    supabase
+      .from("ratings")
+      .select("exchange_request_id")
+      .eq("rater_id", user.id)
+      .in("exchange_request_id", rowIds.length > 0 ? rowIds : [EMPTY_ID])
+      .returns<Pick<Rating, "exchange_request_id">[]>(),
+  ]);
+
+  const partyById = new Map((parties ?? []).map((p) => [p.id, p]));
+  const paymentByExchange = new Map((myPayments ?? []).map((p) => [p.exchange_request_id, p]));
   const ratedExchangeIds = new Set((myRatings ?? []).map((r) => r.exchange_request_id));
 
   const tabClass = (active: boolean) =>

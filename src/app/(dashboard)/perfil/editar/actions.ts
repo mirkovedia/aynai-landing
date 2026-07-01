@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { profileSchema, type ProfileInput } from "@/lib/profile/schema";
+import { portfolioItemSchema } from "@/lib/portfolio/schema";
 
 export interface ActionResult {
   error?: string;
@@ -83,5 +84,57 @@ export const updateProfile = async (input: ProfileInput): Promise<ActionResult> 
   }
 
   revalidatePath("/perfil");
+  return {};
+};
+
+/** Agrega un ítem al portafolio del usuario. */
+export const addPortfolioItem = async (input: {
+  title: string;
+  description?: string;
+  url?: string;
+}): Promise<ActionResult> => {
+  const parsed = portfolioItemSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos", code: "VALIDATION_ERROR" };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", user.id)
+    .single();
+
+  const { error } = await supabase.from("portfolio_items").insert({
+    user_id: user.id,
+    title: parsed.data.title,
+    description: parsed.data.description || null,
+    url: parsed.data.url || null,
+  });
+
+  if (error) return { error: "No se pudo agregar el proyecto", code: "DB_ERROR" };
+
+  revalidatePath("/perfil/editar");
+  if (profile?.username) revalidatePath(`/u/${profile.username}`);
+  return {};
+};
+
+/** Elimina un ítem del portafolio (solo el dueño). */
+export const deletePortfolioItem = async (id: string): Promise<ActionResult> => {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "No autenticado", code: "UNAUTHENTICATED" };
+
+  const { error } = await supabase
+    .from("portfolio_items")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return { error: "No se pudo eliminar el proyecto", code: "DB_ERROR" };
+  revalidatePath("/perfil/editar");
   return {};
 };

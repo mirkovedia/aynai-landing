@@ -16,6 +16,7 @@ const makeProfile = (id: string): PublicProfile => ({
   availability: "available",
   modality: null,
   links: {},
+  onboarding_completed: false,
   created_at: new Date().toISOString(),
 });
 

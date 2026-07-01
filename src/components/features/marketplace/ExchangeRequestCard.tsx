@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -172,6 +173,18 @@ export const ExchangeRequestCard = ({ request, role, counterpart, myPayment, alr
               Marcar como completado
             </Button>
           )}
+        </div>
+      )}
+
+      {/* Botón de chat disponible cuando el intercambio está activo o completado */}
+      {(request.status === "accepted" || request.status === "completed") && (
+        <div className="mt-3">
+          <Link
+            href={`/intercambios/${request.id}`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-cocoa/20 bg-cream-50 px-3 py-1.5 text-sm font-medium text-cocoa transition-colors hover:bg-cocoa/5"
+          >
+            <span aria-hidden="true">💬</span> Abrir chat
+          </Link>
         </div>
       )}
 

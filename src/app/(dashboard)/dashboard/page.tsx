@@ -5,6 +5,7 @@ import { getMatchedFeed } from "@/lib/marketplace/matching";
 import { ScoreWidget } from "@/components/features/dashboard/ScoreWidget";
 import { ActiveExchanges } from "@/components/features/dashboard/ActiveExchanges";
 import { MatchesPreview } from "@/components/features/dashboard/MatchesPreview";
+import { StatsWidget } from "@/components/features/dashboard/StatsWidget";
 import type { Profile, ExchangeRequest, UserSkill } from "@/types/database";
 
 /** Dashboard — hub personalizado con 3 widgets: matches, intercambios activos y score. */
@@ -16,64 +17,83 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Perfil
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single<Profile>();
-
-  // Mis skills
-  const { data: mySkills } = await supabase
-    .from("user_skills")
-    .select("*")
-    .eq("user_id", user.id)
-    .returns<UserSkill[]>();
+  // Ronda 1: todas las queries independientes en paralelo
+  const [
+    { data: profile },
+    { data: mySkills },
+    { data: activeRaw },
+    { data: ratingAgg },
+    { count: completedCount },
+    { count: sentCount },
+    { count: receivedCount },
+    { count: acceptedOrMore },
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, full_name, ayni_score, bio, skills, location, username, avatar_url, availability, modality, links, onboarding_completed, created_at")
+      .eq("id", user.id)
+      .single<Profile>(),
+    supabase
+      .from("user_skills")
+      .select("id, user_id, name, kind, category, level, created_at")
+      .eq("user_id", user.id)
+      .returns<UserSkill[]>(),
+    supabase
+      .from("exchange_requests")
+      .select("id, requester_id, recipient_id, offer_skill, want_skill, message, status, requester_confirmed, recipient_confirmed, completed_at, created_at, updated_at")
+      .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
+      .in("status", ["pending", "accepted"])
+      .order("updated_at", { ascending: false })
+      .limit(5)
+      .returns<ExchangeRequest[]>(),
+    supabase
+      .from("ratings")
+      .select("stars")
+      .eq("ratee_id", user.id)
+      .returns<{ stars: number }[]>(),
+    supabase
+      .from("exchange_requests")
+      .select("id", { count: "exact", head: true })
+      .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
+      .eq("status", "completed"),
+    supabase
+      .from("exchange_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("requester_id", user.id),
+    supabase
+      .from("exchange_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("recipient_id", user.id),
+    supabase
+      .from("exchange_requests")
+      .select("id", { count: "exact", head: true })
+      .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
+      .in("status", ["accepted", "completed"]),
+  ]);
 
   const skillList = mySkills ?? [];
   const myOffers = skillList.filter((s) => s.kind === "offer").map((s) => s.name);
   const mySeeks = skillList.filter((s) => s.kind === "seek").map((s) => s.name);
   const hasSkills = skillList.length > 0;
-
-  // Matches (top 3)
-  const { perfect, partial } = await getMatchedFeed(myOffers, mySeeks, user.id);
-
-  // Intercambios activos (pending + accepted)
-  const { data: activeRaw } = await supabase
-    .from("exchange_requests")
-    .select("*")
-    .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
-    .in("status", ["pending", "accepted"])
-    .order("updated_at", { ascending: false })
-    .limit(5)
-    .returns<ExchangeRequest[]>();
-
   const activeList = activeRaw ?? [];
+  const ratingList = ratingAgg ?? [];
+
+  // Ronda 2: queries que dependen de ronda 1
   const counterpartIds = [
-    ...new Set(
-      activeList.map((r) =>
-        r.requester_id === user.id ? r.recipient_id : r.requester_id
-      )
-    ),
+    ...new Set(activeList.map((r) => r.requester_id === user.id ? r.recipient_id : r.requester_id)),
   ];
-  const { data: counterparts } = await supabase
-    .from("profiles")
-    .select("id, full_name, username")
-    .in(
-      "id",
-      counterpartIds.length > 0
-        ? counterpartIds
-        : ["00000000-0000-0000-0000-000000000000"]
-    )
-    .returns<{ id: string; full_name: string | null; username: string | null }[]>();
+  const [{ perfect, partial }, { data: counterparts }] = await Promise.all([
+    getMatchedFeed(myOffers, mySeeks, user.id),
+    supabase
+      .from("profiles")
+      .select("id, full_name, username")
+      .in("id", counterpartIds.length > 0 ? counterpartIds : ["00000000-0000-0000-0000-000000000000"])
+      .returns<{ id: string; full_name: string | null; username: string | null }[]>(),
+  ]);
 
   const nameById = new Map(
-    (counterparts ?? []).map((p) => [
-      p.id,
-      p.full_name?.trim() || p.username || "Usuario",
-    ])
+    (counterparts ?? []).map((p) => [p.id, p.full_name?.trim() || p.username || "Usuario"])
   );
-
   const activeExchanges = activeList.map((request) => ({
     request,
     counterpartName: nameById.get(
@@ -81,28 +101,9 @@ export default async function DashboardPage() {
     ) ?? "Usuario",
   }));
 
-  // AYNAI Score
-  const { data: ratingAgg } = await supabase
-    .from("ratings")
-    .select("stars")
-    .eq("ratee_id", user.id)
-    .returns<{ stars: number }[]>();
-  const ratingList = ratingAgg ?? [];
   const avgStars = ratingList.length
     ? ratingList.reduce((s, r) => s + r.stars, 0) / ratingList.length
     : null;
-
-  const { count: completedCount } = await supabase
-    .from("exchange_requests")
-    .select("id", { count: "exact", head: true })
-    .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
-    .eq("status", "completed");
-
-  const { count: acceptedOrMore } = await supabase
-    .from("exchange_requests")
-    .select("id", { count: "exact", head: true })
-    .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
-    .in("status", ["accepted", "completed"]);
 
   const links = profile?.links ?? {};
   const hasLink = Boolean(links.web || links.linkedin || links.github || links.x);
@@ -154,8 +155,14 @@ export default async function DashboardPage() {
         <ScoreWidget score={score} storedScore={profile?.ayni_score ?? 0} />
       </div>
 
-      {/* Intercambios activos: ancho completo */}
-      <div className="mt-6">
+      {/* Estadísticas + intercambios activos */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.6fr]">
+        <StatsWidget
+          completed={completedCount ?? 0}
+          sent={sentCount ?? 0}
+          received={receivedCount ?? 0}
+          score={score.total}
+        />
         <ActiveExchanges exchanges={activeExchanges} />
       </div>
     </main>

@@ -1,6 +1,7 @@
-import { MapPin, Globe, Linkedin, Github } from "lucide-react";
+import Image from "next/image";
+import { MapPin, Globe, Linkedin, Github, ExternalLink } from "lucide-react";
 import { StarRating } from "@/components/ui/star-rating";
-import type { Profile, UserSkill, Availability, RatingSummary } from "@/types/database";
+import type { Profile, UserSkill, Availability, RatingSummary, PortfolioItem } from "@/types/database";
 
 /** Subconjunto público del perfil (nunca incluye email). */
 export type PublicProfile = Omit<Profile, "email">;
@@ -12,6 +13,7 @@ export interface ProfileCardProps {
     summary: RatingSummary;
     recent: Array<{ stars: number; comment: string | null; created_at: string }>;
   };
+  portfolio?: PortfolioItem[];
 }
 
 const availabilityLabel: Record<Availability, string> = {
@@ -26,8 +28,8 @@ const availabilityColor: Record<Availability, string> = {
   unavailable: "bg-cocoa/10 text-cocoa/60",
 };
 
-/** Tarjeta de perfil reutilizable: perfil propio, público y (futuro) marketplace. */
-export const ProfileCard = ({ profile, skills, ratings }: ProfileCardProps) => {
+/** Tarjeta de perfil reutilizable: perfil propio, público y marketplace. */
+export const ProfileCard = ({ profile, skills, ratings, portfolio }: ProfileCardProps) => {
   const offers = skills.filter((s) => s.kind === "offer");
   const seeks = skills.filter((s) => s.kind === "seek");
   const name = profile.full_name?.trim() || profile.username || "Usuario";
@@ -40,11 +42,13 @@ export const ProfileCard = ({ profile, skills, ratings }: ProfileCardProps) => {
   return (
     <div className="rounded-3xl border border-cream-300 bg-white p-6 shadow-sm sm:p-8">
       <div className="flex items-start gap-5">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={profile.avatar_url || "/icon.svg"}
           alt={name}
+          width={80}
+          height={80}
           className="h-20 w-20 rounded-2xl border border-cream-300 object-cover"
+          unoptimized={!profile.avatar_url}
         />
         <div className="min-w-0 flex-1">
           <h1 className="font-serif text-3xl font-bold text-cocoa">{name}</h1>
@@ -100,6 +104,32 @@ export const ProfileCard = ({ profile, skills, ratings }: ProfileCardProps) => {
             </a>
           )}
         </div>
+      )}
+
+      {portfolio && portfolio.length > 0 && (
+        <section className="mt-8 border-t border-cream-300 pt-6">
+          <h2 className="text-sm font-semibold text-cocoa">Portafolio</h2>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {portfolio.map((item) => (
+              <li key={item.id} className="rounded-2xl border border-cream-200 bg-cream/40 p-4">
+                <p className="font-medium text-cocoa">{item.title}</p>
+                {item.description && (
+                  <p className="mt-1 text-sm text-cocoa/60 line-clamp-2">{item.description}</p>
+                )}
+                {item.url && (
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-red hover:underline"
+                  >
+                    <ExternalLink size={11} /> Ver proyecto
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {ratings && ratings.summary.count > 0 && (

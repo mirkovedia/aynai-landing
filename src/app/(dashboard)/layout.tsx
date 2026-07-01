@@ -15,27 +15,47 @@ export default async function DashboardLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Badge: solicitudes recibidas pendientes.
   let pendingCount = 0;
-  if (user) {
-    const { count } = await supabase
-      .from("exchange_requests")
-      .select("id", { count: "exact", head: true })
-      .eq("recipient_id", user.id)
-      .eq("status", "pending");
-    pendingCount = count ?? 0;
-  }
-
+  let unreadMessages = 0;
   let notifications: Notification[] = [];
+
   if (user) {
-    const { data } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(20)
-      .returns<Notification[]>();
-    notifications = data ?? [];
+    // Ronda 1: pending count + active exchange ids + notifications en paralelo
+    const [{ count: pending }, { data: activeExchanges }, { data: notifData }] =
+      await Promise.all([
+        supabase
+          .from("exchange_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("recipient_id", user.id)
+          .eq("status", "pending"),
+        supabase
+          .from("exchange_requests")
+          .select("id")
+          .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
+          .in("status", ["accepted", "completed"]),
+        supabase
+          .from("notifications")
+          .select("id, user_id, type, title, body, link, read, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(20)
+          .returns<Notification[]>(),
+      ]);
+
+    pendingCount = pending ?? 0;
+    notifications = notifData ?? [];
+
+    // Ronda 2: mensajes no leídos (depende de activeExchanges)
+    const activeIds = activeExchanges?.map((r) => r.id) ?? [];
+    if (activeIds.length > 0) {
+      const { count } = await supabase
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .neq("sender_id", user.id)
+        .is("read_at", null)
+        .in("exchange_request_id", activeIds);
+      unreadMessages = count ?? 0;
+    }
   }
 
   return (
@@ -61,6 +81,11 @@ export default async function DashboardLayout({
                 {pendingCount > 0 && (
                   <span className="ml-1 inline-flex items-center justify-center rounded-full bg-red px-1.5 text-[0.65rem] font-bold text-cream">
                     {pendingCount}
+                  </span>
+                )}
+                {unreadMessages > 0 && (
+                  <span className="ml-1 inline-flex items-center justify-center rounded-full bg-green px-1.5 text-[0.65rem] font-bold text-cream" title="Mensajes no leídos">
+                    💬{unreadMessages}
                   </span>
                 )}
               </Link>

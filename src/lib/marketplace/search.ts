@@ -56,7 +56,7 @@ export const searchProfiles = async (filters: SearchFiltersInput): Promise<Searc
   const ids = profiles.map((p) => p.id);
   const { data: allSkills } = await supabase
     .from("user_skills")
-    .select("*")
+    .select("id, user_id, name, kind, category, level, created_at")
     .in("user_id", ids)
     .returns<UserSkill[]>();
 
@@ -116,7 +116,7 @@ export const listProfiles = async (filters: ListProfilesInput): Promise<SearchRe
   const ids = profiles.map((p) => p.id);
   const { data: allSkills } = await supabase
     .from("user_skills")
-    .select("*")
+    .select("id, user_id, name, kind, category, level, created_at")
     .in("user_id", ids)
     .returns<UserSkill[]>();
 
