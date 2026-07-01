@@ -26,6 +26,7 @@ export interface Profile {
   availability: Availability;
   modality: string | null;
   links: ProfileLinks;
+  onboarding_completed: boolean;
   created_at: string;
 }
 
@@ -91,6 +92,49 @@ export interface Rating {
   ratee_id: string;
   stars: number;
   comment: string | null;
+  created_at: string;
+}
+
+/** Fila de la tabla portfolio_items. */
+export interface PortfolioItem {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  url: string | null;
+  created_at: string;
+}
+
+/** Fila de la tabla messages (chat de un intercambio). */
+export interface Message {
+  id: string;
+  exchange_request_id: string;
+  sender_id: string;
+  content: string;
+  read_at: string | null;
+  created_at: string;
+}
+
+/** Fila de la tabla exchange_milestones. */
+export interface Milestone {
+  id: string;
+  exchange_request_id: string;
+  created_by: string;
+  title: string;
+  completed: boolean;
+  completed_by: string | null;
+  completed_at: string | null;
+  position: number;
+  created_at: string;
+}
+
+/** Fila de la tabla exchange_notes (una por intercambio). */
+export interface ExchangeNote {
+  id: string;
+  exchange_request_id: string;
+  content: string;
+  updated_by: string;
+  updated_at: string;
   created_at: string;
 }
 

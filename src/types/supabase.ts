@@ -12,6 +12,138 @@ export type Database = {
   }
   public: {
     Tables: {
+      portfolio_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          title: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      exchange_milestones: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string
+          exchange_request_id: string
+          id: string
+          position: number
+          title: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by: string
+          exchange_request_id: string
+          id?: string
+          position?: number
+          title: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string
+          exchange_request_id?: string
+          id?: string
+          position?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      exchange_notes: {
+        Row: {
+          content: string
+          created_at: string
+          exchange_request_id: string
+          id: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          exchange_request_id: string
+          id?: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          exchange_request_id?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          exchange_request_id: string
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          exchange_request_id: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          exchange_request_id?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_exchange_request_id_fkey"
+            columns: ["exchange_request_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commission_payments: {
         Row: {
           amount_bs: number
@@ -180,6 +312,7 @@ export type Database = {
           links: Json
           location: string | null
           modality: string | null
+          onboarding_completed: boolean
           skills: string[]
           username: string | null
         }
@@ -195,6 +328,7 @@ export type Database = {
           links?: Json
           location?: string | null
           modality?: string | null
+          onboarding_completed?: boolean
           skills?: string[]
           username?: string | null
         }
@@ -210,6 +344,7 @@ export type Database = {
           links?: Json
           location?: string | null
           modality?: string | null
+          onboarding_completed?: boolean
           skills?: string[]
           username?: string | null
         }
